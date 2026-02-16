@@ -1,0 +1,11 @@
+name: wetter
+title: wetter
+username:
+account: brry
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8854509
+bundleId: 10329793
+url: https://brry.shinyapps.io/wetter/
+asMultiple: FALSE
+asStatic: FALSE

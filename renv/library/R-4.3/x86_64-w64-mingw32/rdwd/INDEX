@@ -1,0 +1,51 @@
+addBorders              add country and Bundesland borders to a map
+app                     Launch interactive weather analysis app
+checkIndex              check indexes
+checkSuggestedPackage   check suggested package for availability
+checkUpdates            check some historical files for updates by DWD
+createIndex             Create file and meta index of the DWD CDC FTP
+                        Server
+dataDWD                 Download data from the DWD CDC FTP Server
+dirDWD                  directory management for rdwd
+dwdbase                 DWD FTP Server base URL
+dwdparams               DWD parameter explanations
+fileType                determine DWD file type
+findID                  find DWD weather station ID from name
+index                   Indexes of files and metadata on the DWD CDC
+                        FTP server
+indexFTP                Create a recursive index of an FTP Server
+lldist                  distance between lat-long coordinates
+locdir                  local data directory
+metaInfo                Information for a station ID on the DWD CDC FTP
+                        server
+nearbyStations          Find DWD stations close to given coordinates
+newColumnNames          Enhance readDWD column names
+plotDWD                 Quickly plot time series
+plotRadar               plot radar products on a pretty map
+projectRasterDWD        project DWD raster data
+rdwd                    Handle Climate Data from DWD (German Weather
+                        Service)
+rdwdquiet               global quiet option for rdwd
+readDWD                 Process data from the DWD CDC FTP Server
+readDWD.asc             read dwd gridded radolan asc data
+readDWD.asczip          read dwd gridded asc data
+readDWD.binary          read dwd gridded radolan binary data
+readDWD.data            read regular dwd data
+readDWD.deriv           read derived dwd data
+readDWD.grib2           read nwp forecast data
+readDWD.hyras           read dwd hyras netcdf data
+readDWD.meta            read dwd metadata (Beschreibung*.txt files)
+readDWD.multia          read multi_annual dwd data
+readDWD.nc              read dwd netcdf data
+readDWD.pdf             open pdf data
+readDWD.radar           read dwd gridded radolan radar data
+readDWD.raster          read dwd gridded raster data
+readDWD.rklim           read dwd gridded radklim binary data
+readDWD.stand           read subdaily/standard_format dwd data
+readMeta                Process data from the DWD CDC FTP Server
+readVars                Process data from the DWD CDC FTP Server
+rowDisplay              Create leaflet map popup from data.frame rows
+runLocalTests           run local tests of rdwd
+selectDWD               Select data from the DWD CDC FTP Server
+updateRdwd              Update rdwd development version
+validFileTypes          valid fileType values

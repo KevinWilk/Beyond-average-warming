@@ -1,0 +1,27 @@
+Package: deldir
+Version: 2.0-4
+Date: 2024-02-27
+Title: Delaunay Triangulation and Dirichlet (Voronoi) Tessellation
+Author: Rolf Turner
+Maintainer: Rolf Turner <rolfturner@posteo.net>
+Depends: R (>= 3.5.0)
+Suggests: polyclip
+Imports: graphics, grDevices
+Description: Calculates the Delaunay triangulation and the Dirichlet or Voronoi tessellation (with respect to the entire plane) of a planar point set. Plots triangulations and tessellations in various ways.  Clips tessellations to sub-windows. Calculates perimeters of tessellations.  Summarises information about the tiles of the tessellation.	Calculates the centroidal Voronoi (Dirichlet) tessellation using Lloyd's algorithm.
+LazyData: true
+ByteCompile: true
+License: GPL (>= 2)
+NeedsCompilation: yes
+Packaged: 2024-02-27 02:48:30 UTC; rolf
+Repository: RSPM
+Date/Publication: 2024-02-28 04:00:02 UTC
+Encoding: UTF-8
+Built: R 4.3.0; x86_64-w64-mingw32; 2025-12-02 12:37:19 UTC; windows
+Archs: x64
+RemoteType: standard
+RemoteRef: deldir
+RemotePkgRef: deldir
+RemoteRepos: https://packagemanager.posit.co/cran/latest
+RemoteReposName: CRAN
+RemotePkgPlatform: x86_64-w64-mingw32
+RemoteSha: 2.0-4
