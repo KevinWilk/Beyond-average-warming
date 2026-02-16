@@ -5,3 +5,6 @@ lock/
 python/
 sandbox/
 staging/
+weather temperature/kernel weights/full_w_d_lag4_01.rds
+weather temperature/kernel weights/full_w_d_lag4_009.rds
+weather temperature/kernel weights/full_w_d_lag4_006.rds
