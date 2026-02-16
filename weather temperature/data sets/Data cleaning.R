@@ -22,6 +22,7 @@ library(tibble)
 library(gridExtra)                    
 library(rdwd)
 
+
  
 for(k in 1:4){
   
@@ -308,7 +309,7 @@ for(k in 1:4){
   
   
   
-  filename = paste0("weather temperature/data/", cities$city[k], ".RData")
+  filename = paste0("weather temperature/data sets/", cities$city[k], ".RData")
   rm(keep.cols, data.d, data.s, k, cities)
   
   save.image(file = filename)
