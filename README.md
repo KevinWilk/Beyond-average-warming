@@ -16,7 +16,7 @@ Note the this code needs the package “biLocPol” of which you can get the dev
 devtools::install_github("mbrgr/biLocPol")
 # library(biLocPol)
 ```
-Important: “Mod_biLocPol.R“ contains apdapted and extended functions od this package.
+Important: “Mod_biLocPol.R“ contains apdapted and extended functions of this package.
 
 
 ## Structure
