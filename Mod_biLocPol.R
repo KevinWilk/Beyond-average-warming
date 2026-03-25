@@ -16,7 +16,7 @@
 
 #' Expanded and adapted local_polynomial_weights() to local.polynomial.weights()
 #'   Features: - Grid.type -lesseq- is implemented
-#'             - x.design apdapted to 0:(p-1)/(p-1) 
+#'             - x.design adapted to 0:(p-1)/(p-1) 
 #'
 #' Adapted observation_grid() to observation.grid()
 #'   Feature: - grid adapted to 0:(p-1)/(p-1)
@@ -24,7 +24,6 @@
 local.polynomial.weights = function(p, h, p.eval, parallel = F, m = 1,
                                     del = 0, x.design.grid = NULL,
                                     grid.type = "less", eval.type = "full", parallel.environment = T, ...){
-  
   
   observation.grid = function(p = NULL, x = NULL, comp = "less") {
     if(is.null(x) & is.null(p))
@@ -67,7 +66,7 @@ local.polynomial.weights = function(p, h, p.eval, parallel = F, m = 1,
   
   x.eval.grid = switch(eval.type,
                        full = observation.grid(p = p.eval, comp = "lesseq"),
-                       diagonal = matrix( (0:(p.eval-1))/(0:(p.eval-1))/(p.eval-1), p.eval, 2)   )
+                       diagonal = matrix( (0:(p.eval-1))/(p.eval-1), p.eval, 2)   )
   
   if (del > m) {
     m = 2; del = 2
