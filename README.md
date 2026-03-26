@@ -27,4 +27,4 @@ source("https://raw.githubusercontent.com/KevinWilk/Beyond-the-positive-drift/ma
 ## Comments
 
 Note that the calculation of the weights, the simulations and the application are paralallized with the “future.apply” and “future” package and performed using 
-the Marburg Compute Cluster (MaRC3a) at Marburg University [Link](https://www.uni-marburg.de/en/hrz/services/high-performance-computing).
+the Marburg Compute Cluster (MaRC3a) at the Philipps-Universität Marburg [Link](https://www.uni-marburg.de/en/hrz/services/high-performance-computing).
