@@ -19,74 +19,94 @@ library(tensorA)
 
 
 
+l = 1
+
+data.example = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")
+
+load(paste0("weather temperature/data sets/",data.example[[k]],".RData"))
+#load(paste0("Application/Data examples/function_to_load.RData"))
+
+
 ########################################################
 # Estimating lag covariance kernels for lag = 0,...,12 #
 ########################################################
 
+
 cov.s.list = list()
 cov.d.list = list()
+
 
 options(future.globals.maxSize = 20 * 1024^3) 
 plan(multisession, workers = future::availableCores()-2)
 
+
 for(m in 1:12){
   
-  sample.dense  = data.d.34h |> filter(MONTH == month.name[m]) |> dplyr::select(1,4:dim(data.d.34h)[2])
-  sample.dense = sample.dense[rowSums(is.na(sample.dense)) == 0,] 
-  pd = dim(sample.dense)[2] - 1
+    sample.dense  = data.d.34h |> 
+                      filter(MONTH == month.name[m]) |> 
+                        dplyr::select(1,4:dim(data.d.34h)[2])
+    
+    sample.dense = sample.dense[rowSums(is.na(sample.dense)) == 0,] 
+    pd = dim(sample.dense)[2] - 1
   
-  sample.sparse = data.s.34h |> filter(MONTH == month.name[m]) |> dplyr::select(1,4:dim(data.s.34h)[2])
-  sample.sparse = sample.sparse[rowSums(is.na(sample.sparse)) == 0,]  
-  p = dim(sample.sparse)[2] - 1
+    sample.sparse = data.s.34h |> 
+                      filter(MONTH == month.name[m]) |> 
+                        dplyr::select(1,4:dim(data.s.34h)[2])
+    
+    sample.sparse = sample.sparse[rowSums(is.na(sample.sparse)) == 0,]  
+    p = dim(sample.sparse)[2] - 1
   
-  lag.k.Gamma   = list()
-  lag.k.Gamma.d = list()  
+    lag.k.Gamma   = list()
+    lag.k.Gamma.d = list()  
   
-  file.s = paste0("weather temperature R files/kernel weights/",data.example[[l]],month.name[m],"/sparse/full_w.lag0.rds")
-  file.d = paste0("weather temperature R files/kernel weights/",data.example[[l]],month.name[m], "/dense/full_w.lag0.rds")
+    file.s = paste0("weather temperature/kernel weights/full_w_s_lag0.rds")
+    file.d = paste0("weather temperature/kernel weights/full_w_d_lag0," ",.rds")  ##HIER PROBLEME
   
-  w   = readRDS(file.s)
-  wd  = readRDS(file.d)
+    w   = readRDS(file.s)
+    wd  = readRDS(file.d)
   
-  lag.Gamma = eval.weights(w,observation.transformation(sample.sparse[,-1],grid.type = "less", periodic = T, m = 24))
-  lag.k.Gamma[[1]] = lag.Gamma
+    lag.Gamma = eval.weights(w,observation.transformation(sample.sparse[,-1],grid.type = "less", periodic = T, m = 24))
+    lag.k.Gamma[[1]] = lag.Gamma
 
-  lag.Gamma.d   = eval.weights(wd,observation.transformation(sample.dense[,-1],grid.type = "less", periodic = T, m = 144))
-  lag.k.Gamma.d[[1]] = lag.Gamma.d
+    lag.Gamma.d   = eval.weights(wd,observation.transformation(sample.dense[,-1],grid.type = "less", periodic = T, m = 144))
+    lag.k.Gamma.d[[1]] = lag.Gamma.d
   
-  rm(w,lag.Gamma)
-  rm(wd,lag.Gamma.d)
+    rm(w,lag.Gamma)
+    rm(wd,lag.Gamma.d)
   
-  lag.k.Gamma.part2 = future_lapply(1:12, function(k) {
-    file.s = paste0("weather temperature R files/kernel weights/",data.example[[l]],month.name[m],"/sparse/full_w.lag",k,".rds")
-    w.lag = readRDS(file.s)
-    n.year = unique(sample.sparse$Year) 
-    lag.Gamma = Reduce(`+`,lapply(n.year,  function(j){eval.weights(w.lag, observation.transformation(sample.sparse[which(sample.sparse$Year %in% j), -1], lag = k, grid.type = "lesseq", periodic = T, m = 24), lag = k)}))/length(n.year)
-    print(paste("Lag ", k, " Gamma: done"))
-    lag.Gamma
-  })
-  lag.k.Gamma = c(lag.k.Gamma,lag.k.Gamma.part2)
+    lag.k.Gamma.part2 = future_lapply(1:2, function(k) {
+      file.s = paste0("weather temperature/kernel weights/full_w_s_lag",k,".rds")
+      w.lag = readRDS(file.s)
+      n.year = unique(sample.sparse$Year) 
+      lag.Gamma = Reduce(`+`,lapply(n.year,  function(j){eval.weights(w.lag, observation.transformation(sample.sparse[which(sample.sparse$Year %in% j), -1], lag = k, grid.type = "lesseq", periodic = T, m = 24), lag = k)}))/length(n.year)
+      lag.Gamma
+    })
+    lag.k.Gamma = c(lag.k.Gamma,lag.k.Gamma.part2)
   
-  lag.k.Gamma.d.part2 = future_lapply(1:12, function(k) {  
-    file.d = paste0("weather temperature R files/kernel weights/",data.example[[l]],month.name[m],"/dense/full_w.lag",k,".rds")
-    w.lag = readRDS(file.d)
-    n.year = unique(sample.dense$Year) 
-    lag.Gamma = Reduce(`+`,lapply(n.year,  function(j){eval.weights(w.lag, observation.transformation(sample.dense[which(sample.dense$Year %in% j), -1], lag = k, grid.type = "lesseq", periodic = T, m = 144), lag = k)}))/length(n.year)
-    print(paste("Lag ", k, " Gamma d: done"))
-    lag.Gamma
-  })
-  lag.k.Gamma.d = c(lag.k.Gamma.d,lag.k.Gamma.d.part2)
+    #lag.k.Gamma.d.part2 = future_lapply(1:2, function(k) {  
+    #  file.d = paste0("weather temperature R files/kernel weights/",data.example[[l]],month.name[m],"/dense/full_w.lag",k,".rds")
+    #  w.lag = readRDS(file.d)
+    #  n.year = unique(sample.dense$Year) 
+    #  lag.Gamma = Reduce(`+`,lapply(n.year,  function(j){eval.weights(w.lag, observation.transformation(sample.dense[which(sample.dense$Year %in% j), -1], lag = k, grid.type = "lesseq", periodic = T, m = 144), lag = k)}))/length(n.year)
+    #  lag.Gamma
+    #})
+    #lag.k.Gamma.d = c(lag.k.Gamma.d,lag.k.Gamma.d.part2)
   
-  cov.s.list[[m]]   = lag.k.Gamma
-  cov.d.list[[m]]   = lag.k.Gamma.d
+    cov.s.list[[m]]   = lag.k.Gamma
+    #cov.d.list[[m]]   = lag.k.Gamma.d
   
-  rm(lag.k.Gamma,p)
-  rm(lag.k.Gamma.d,pd)
+    rm(lag.k.Gamma,p)
+    rm(lag.k.Gamma.d,pd)
   
-  rm(sample.dense,sample.sparse,lag.k.Gamma.d.part2,lag.k.Gamma.part2)
+    rm(sample.dense,sample.sparse,lag.k.Gamma.d.part2,lag.k.Gamma.part2)
+    print(paste0("done: ", month.name[m]))
 }
 
 plan(sequential)
+
+
+
+
 
 
 
