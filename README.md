@@ -9,7 +9,7 @@ This repository contains all numerical results and code implementations associat
 
 Kevin Wilk and Hajo Holzmann [arxiv]( ). 
 
-Note the this code needs the package “biLocPol” of which you can get the development version from [GitHub](https://github.com/mbrgr/biLocPol) with:
+Note the file 'Mod_BiLocPol.R' is based on the package “biLocPol” of which you can get the development version from [GitHub](https://github.com/mbrgr/biLocPol) with:
 
 ``` r
 # install.packages("devtools")
