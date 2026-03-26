@@ -22,7 +22,7 @@ library(gridExtra)
 
 source("Mod_biLocPol.R")
 
-source("Simulation_Mod_biLocPol.R") #Adapted to grid from Berger and Holzmann (2025)
+source("Simulation/Simulation_Mod_biLocPol.R") #Adapted to grid from Berger and Holzmann (2025)
 source("Simulation/function_data_generating.R")
 source("Simulation/function_bandwidth_selection.R")
 
