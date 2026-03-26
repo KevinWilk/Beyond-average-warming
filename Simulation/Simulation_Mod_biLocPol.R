@@ -7,7 +7,7 @@
 #########################################################
 
 
-# Grid Setting: t_j = (j -0.5)/p
+# Grid setting: t_j = (j -0.5)/p
 # like in Berger and Holzmann (2025)
 
 
