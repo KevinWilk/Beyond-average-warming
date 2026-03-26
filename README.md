@@ -17,7 +17,9 @@ devtools::install_github("mbrgr/biLocPol")
 # library(biLocPol)
 ```
 Important: “Mod_biLocPol.R“ contains apdapted and extended functions of this package.
-
+``` r
+source("https://raw.githubusercontent.com/KevinWilk/Beyond-the-positive-drift/main/Mod_biLocPol.R")
+```
 
 ## Structure
 
