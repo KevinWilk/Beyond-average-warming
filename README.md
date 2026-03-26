@@ -24,5 +24,5 @@ Important: “Mod_biLocPol.R“ contains apdapted and extended functions of this
 
 ## Comments
 
-Some of the “.Rdata” files are large since they contain the actual weights of some of the estimations. Note that the calculation of the weights and the simulations are paralallized with the “future.apply” and “future” package and performed using 
+Note that the calculation of the weights and the simulations are paralallized with the “future.apply” and “future” package and performed using 
 the Marburg Compute Cluster (MaRC3a) at University of Marburg [Link](https://www.uni-marburg.de/en/hrz/services/high-performance-computing).
