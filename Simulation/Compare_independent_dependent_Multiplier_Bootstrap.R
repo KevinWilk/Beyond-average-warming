@@ -143,41 +143,54 @@ ind.MB.result = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, P.Gamma, (1:
 plan(sequential)
 
 
-delta.centered     = delta((1:p.eval-0.5)/p.eval, constant = delta_constant)-integrate(function(x){delta(x,constant = delta_constant)},0,1)$value 
+delta.centered     = delta((1:p.eval-0.5)/p.eval, 
+                           constant = delta_constant)-integrate(function(x){delta(x,constant = delta_constant)},0,1)$value 
 delta.centered.est = estimation$delta$ESTIMATE - estimation$delta_int$ESTIMATE
 
 delta.centered.df = data.frame(x = (1:p.eval-0.5)/p.eval, true.val = delta.centered, est.val = delta.centered.est)
 
-KI.dep = data.frame(x = (1:p.eval-0.5)/p.eval, UP = delta.centered.est + sqrt(P.Gamma/(n))* dep.MB.result$quantile,LOW = delta.centered.est - sqrt(P.Gamma/(n))* dep.MB.result$quantile)
-KI.ind = data.frame(x = (1:p.eval-0.5)/p.eval, UP = delta.centered.est + sqrt(P.Gamma/(n))* ind.MB.result$quantile,LOW = delta.centered.est - sqrt(P.Gamma/(n))* ind.MB.result$quantile)
+KI.dep = data.frame(x = (1:p.eval-0.5)/p.eval, 
+                      UP = delta.centered.est + sqrt(P.Gamma/(n))* dep.MB.result$quantile,
+                        LOW = delta.centered.est - sqrt(P.Gamma/(n))* dep.MB.result$quantile)
+
+KI.ind = data.frame(x = (1:p.eval-0.5)/p.eval, 
+                      UP = delta.centered.est + sqrt(P.Gamma/(n))* ind.MB.result$quantile,
+                        LOW = delta.centered.est - sqrt(P.Gamma/(n))* ind.MB.result$quantile)
 
 ggplot() +
   geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "dependent"),data = KI.dep, alpha = 0.2, col = NA) +
-  geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "independent"),data = KI.ind, col = "black", alpha = 0,size = 0.7, lty = 2)+
-  geom_line(aes(x, est.val, colour = "hat Difference"), data = delta.centered.df, lty = 1, size = 0.8) +
-  geom_line(aes(x, true.val, colour = "Difference"), data = delta.centered.df, lty = 1, size = 0.6) +
-  scale_fill_manual("Confidence bands:", values = c("dependent" = "black", "independent" = "#F8766D"),
-                    labels = c("dependent" = expression("with "*hat(q)[0.95]^{DMB}),
-                               "independent" = expression("with "*hat(q)[0.95]^{IMB})),
-                    breaks = c("dependent","independent")) +
+    geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "independent"),data = KI.ind, col = "black", alpha = 0,size = 0.7, lty = 2)+
+      geom_line(aes(x, est.val, colour = "hat Difference"), data = delta.centered.df, lty = 1, size = 0.8) +
+        geom_line(aes(x, true.val, colour = "Difference"), data = delta.centered.df, lty = 1, size = 0.6) +
   
-  scale_colour_manual("Curves:", values = c("hat Difference" = "yellow","Difference" = "#F8766D"),
-                      labels = c("hat Difference" = expression(hat(delta) - integral(hat(delta), "")*" d"*lambda),
-                                 "Difference" = expression(delta - integral(delta, "")*" d"*lambda))) +
-  theme(plot.subtitle = element_text(size =14),
-        legend.text = element_text(size =12),
-        legend.title = element_text(size = 13),
-        axis.title.x = element_text(size = 15),     
-        axis.title.y = element_text(size = 15),
-        axis.text.x  = element_text(size = 13),     
-        axis.text.y  = element_text(size = 13))+
-  theme(
-    legend.position = "right",
-    legend.box = "vertical",
-    legend.key.height = unit(0.3, "cm"))+
-  guides(
-    fill = guide_legend(nrow = 2, byrow = TRUE),
-    colour = guide_legend(nrow = 2, byrow = TRUE)
-  )
+        labs(subtitle = bquote("n = " * .(n) * ", p = " * .(p) *", " *tilde(n)*" = " * .(nd) * " and "*tilde(p)*" = " * .(pd)),
+             x = NULL,
+             y = NULL) +
+  
+          scale_fill_manual("Confidence bands:", 
+                              values = c("dependent" = "black", "independent" = "#F8766D"),
+                              labels = c("dependent" = expression("with "*hat(q)[0.95]^{DMB}),
+                               "independent" = expression("with "*hat(q)[0.95]^{IMB})),
+                              breaks = c("dependent","independent")) +
+  
+          scale_colour_manual("Curves:", 
+                              values = c("hat Difference" = "yellow","Difference" = "#F8766D"),
+                              labels = c("hat Difference" = expression(hat(delta) - integral(hat(delta), "")*" d"*lambda),
+                                         "Difference" = expression(delta - integral(delta, "")*" d"*lambda))) +
+  
+          theme(plot.subtitle = element_text(size =14),
+                legend.text   = element_text(size =12),
+                legend.title  = element_text(size = 13),
+                axis.title.x  = element_text(size = 15),     
+                axis.title.y  = element_text(size = 15),
+                axis.text.x   = element_text(size = 13),     
+                axis.text.y   = element_text(size = 13),
+                
+                legend.position   = "right",
+                legend.box        = "vertical",
+                legend.key.height = unit(0.3, "cm")) +
+  
+          guides(fill   = guide_legend(nrow = 2, byrow = TRUE),
+                 colour = guide_legend(nrow = 2, byrow = TRUE))
 
 ggsave("Simulation/pictures/Comparison_CB.png", width = 26, height = 14, units = "cm", dpi = 300)
