@@ -193,4 +193,4 @@ ggplot() +
           guides(fill   = guide_legend(nrow = 2, byrow = TRUE),
                  colour = guide_legend(nrow = 2, byrow = TRUE))
 
-ggsave("Simulation/pictures/Comparison_CB.png", width = 30, height = 14, units = "cm", dpi = 300)
+ggsave("Simulation/Figures/Comparison_CB.png", width = 30, height = 14, units = "cm", dpi = 300)

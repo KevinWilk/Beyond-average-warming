@@ -74,7 +74,7 @@ ggplot(results.hv |> filter(lag %in% 0:3), aes(x = lag, y = bandwidth, color = p
   facet_wrap(~ p, ncol = 5)
 
 
-ggsave("Simulation/pictures/hv_bandwidth_selection.png", width = 26, height = 14, units = "cm", dpi = 300)
+ggsave("Simulation/Figures/hv_bandwidth_selection.png", width = 26, height = 14, units = "cm", dpi = 300)
 
 
 

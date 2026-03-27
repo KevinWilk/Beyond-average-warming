@@ -124,7 +124,7 @@ ggplot() +
   labs(y=NULL, x = NULL, 
        subtitle = bquote("Simulation setup of " * mu^{"[s]"} * ": n = " * .(n) * ", p = " * .(p))) 
 
-ggsave(paste0("Simulation/pictures/constant ",delta_constant," simulation setup sparse.png"), width = 18, height = 17, units = "cm", dpi = 300)
+ggsave(paste0("Simulation/Figures/constant ",delta_constant," simulation setup sparse.png"), width = 18, height = 17, units = "cm", dpi = 300)
 
 
 ggplot() + 
@@ -144,7 +144,7 @@ ggplot() +
   labs(y=NULL, x = NULL, 
        subtitle = bquote("Simulation setup of " * mu^{"[d]"} * ": "*tilde(n)*" = " * .(nd) * ", "*tilde(p)*" = " * .(pd))) 
 
-ggsave(paste0("Simulation/pictures/constant ",delta_constant," simulation setup dense.png"), width = 18, height = 17, units = "cm", dpi = 300)
+ggsave(paste0("Simulation/Figures/constant ",delta_constant," simulation setup dense.png"), width = 18, height = 17, units = "cm", dpi = 300)
 
 
 
@@ -169,7 +169,7 @@ ggplot() +
   labs(y=NULL, x = NULL, 
        subtitle = bquote("Simulation setup of " * delta * " = " * mu^{"[s]"}-  mu^{"[d]"} )) 
 
-ggsave(paste0("Simulation/pictures/constant ",delta_constant," simulation setup delta.png"), width = 18, height = 17, units = "cm", dpi = 300)
+ggsave(paste0("Simulation/Figures/constant ",delta_constant," simulation setup delta.png"), width = 18, height = 17, units = "cm", dpi = 300)
 
 
 
