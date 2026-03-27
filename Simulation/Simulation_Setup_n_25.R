@@ -134,7 +134,7 @@ ggplot() +
   geom_line(aes(x, Y.d.hat), Y.d.est.obs.s, lty = 2,col = "red",size = 2) +
   theme(plot.subtitle = element_text(size =26),
         legend.position = "none",
-        legend.text = element_text(size =17),
+        legend.text = element_text(size  = 17),
         legend.title = element_text(size = 15),
         axis.title.x = element_text(size = 17),     
         axis.title.y = element_text(size = 17),

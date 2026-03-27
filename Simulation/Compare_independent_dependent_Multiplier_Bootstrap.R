@@ -159,9 +159,9 @@ KI.ind = data.frame(x = (1:p.eval-0.5)/p.eval,
 
 ggplot() +
   geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "dependent"),data = KI.dep, alpha = 0.2, col = NA) +
-    geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "independent"),data = KI.ind, col = "black", alpha = 0,size = 0.7, lty = 2)+
-      geom_line(aes(x, est.val, colour = "hat Difference"), data = delta.centered.df, lty = 1, size = 0.8) +
-        geom_line(aes(x, true.val, colour = "Difference"), data = delta.centered.df, lty = 1, size = 0.6) +
+    geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "independent"),data = KI.ind, col = "black", alpha = 0,size = 1, lty = 2)+
+      geom_line(aes(x, est.val, colour = "hat Difference"), data = delta.centered.df, lty = 1, size = 1) +
+        geom_line(aes(x, true.val, colour = "Difference"), data = delta.centered.df, lty = 1, size = 1) +
   
         labs(subtitle = bquote("n = " * .(n) * ", p = " * .(p) *", " *tilde(n)*" = " * .(nd) * " and "*tilde(p)*" = " * .(pd)),
              x = NULL,
@@ -178,13 +178,13 @@ ggplot() +
                               labels = c("hat Difference" = expression(hat(delta) - integral(hat(delta), "")*" d"*lambda),
                                          "Difference" = expression(delta - integral(delta, "")*" d"*lambda))) +
   
-          theme(plot.subtitle = element_text(size =14),
-                legend.text   = element_text(size =12),
-                legend.title  = element_text(size = 13),
-                axis.title.x  = element_text(size = 15),     
-                axis.title.y  = element_text(size = 15),
-                axis.text.x   = element_text(size = 13),     
-                axis.text.y   = element_text(size = 13),
+          theme(plot.subtitle = element_text(size = 24),
+                legend.text = element_text(size  = 22),
+                legend.title = element_text(size = 22),
+                axis.title.x = element_text(size = 22),     
+                axis.title.y = element_text(size = 22),
+                axis.text.x  = element_text(size = 22),     
+                axis.text.y  = element_text(size = 22),
                 
                 legend.position   = "right",
                 legend.box        = "vertical",
@@ -193,4 +193,4 @@ ggplot() +
           guides(fill   = guide_legend(nrow = 2, byrow = TRUE),
                  colour = guide_legend(nrow = 2, byrow = TRUE))
 
-ggsave("Simulation/pictures/Comparison_CB.png", width = 26, height = 14, units = "cm", dpi = 300)
+ggsave("Simulation/pictures/Comparison_CB.png", width = 30, height = 14, units = "cm", dpi = 300)
