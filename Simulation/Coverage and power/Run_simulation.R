@@ -18,10 +18,26 @@ library(tibble)
 library(gridExtra)
 
 
-for(j in 2:10){
+for(j in 2:11){
 
-    i = 2
+    i = 1
 
-    source("Power and Coverage of Test.R")
+    source("Simulation/Coverage and power/Coverage_and_power_of_Test.R")
     
+}
+
+for(j in 2:11){
+  
+  i = 2
+  
+  source("Simulation/Coverage and power/Coverage_and_power_of_Test.R")
+  
+}
+
+for(j in 2:11){
+  
+  i = 3
+  
+  source("Simulation/Coverage and power/Coverage_and_power_of_Test.R")
+  
 }
