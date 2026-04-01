@@ -105,11 +105,11 @@ if(!delta_constant){
 }
 
 
-# Optional: For parallelizing computations ###################
-options(future.globals.maxSize = 64 * 1024^3)               ##   
-plan(multisession, workers = 120) # MaRC3: partition=mqtest ##
-#plan(multisession, workers = 60) # MaRC3: partition=normal ##
-##############################################################
+# Optional: For parallelizing computations ####################
+options(future.globals.maxSize = 64 * 1024^3)                ##   
+plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
+#plan(multisession, workers = 60) # MaRC3a: partition=normal ##
+###############################################################
 
 for(rep in 1:Repitition){
   
