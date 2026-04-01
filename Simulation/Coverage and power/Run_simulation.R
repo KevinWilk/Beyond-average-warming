@@ -22,7 +22,7 @@ for(j in 2:11){
 
     i = 1
 
-    source("Simulation/Coverage and power/Coverage_and_power_of_Test.R")
+    source("Coverage_and_power_of_Test.R")
     
 }
 
@@ -30,7 +30,7 @@ for(j in 2:11){
   
   i = 2
   
-  source("Simulation/Coverage and power/Coverage_and_power_of_Test.R")
+  source("Coverage_and_power_of_Test.R")
   
 }
 
@@ -38,6 +38,6 @@ for(j in 2:11){
   
   i = 3
   
-  source("Simulation/Coverage and power/Coverage_and_power_of_Test.R")
+  source("Coverage_and_power_of_Test.R")
   
 }
