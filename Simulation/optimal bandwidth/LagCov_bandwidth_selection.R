@@ -115,12 +115,12 @@ file100.optim  = paste0("Simulation/optimal bandwidth/Results/",folder,"/lag_Gam
 
 
 
-# Optional: For parallelizing computations ###############
-options(future.globals.maxSize = 20 * 1024^3)           ##  
-plan(multisession, workers = future::availableCores()-2)##
-##########################################################
+# Optional: For parallelizing computations ###################
+options(future.globals.maxSize = 64 * 1024^3)               ##  
+plan(multisession, workers = 60) # MaRC3a: partition=normal ##
+##############################################################
 
-for(i in 1:length(N)){
+for(i in 2:length(N)){
   
   print(paste0("Start: n = ",N[i]))
   
