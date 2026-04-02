@@ -1,6 +1,6 @@
 ## Overview 
 
-#### Coverage_and_power_of_Test.R
+#### `Coverage_and_power_of_Test.R`
 - Runs a simulation data setup 
 - Estimates quantile via the dependent/independent Multiplier Bootstrap with N^* = 1000
 - constructs confidence bands
