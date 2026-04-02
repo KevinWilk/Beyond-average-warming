@@ -6,7 +6,7 @@
   -> saved as `lag_Gamma_d_100_Bandwidth.rds` in *Results/Delta = 0* (under H0: delta constant) and *Results/Delta != 0* (under H0: delta not constant)
   
 - `bw.sample.list.p.25/50/75` and `bw.sample.list.pd.100`: saved selected bandwidth of length 1000 <br> 
-  -> saved as `lag_Gamma_s_25/50/75_sample.rds` in Results
+  -> saved as `lag_Gamma_s_25/50/75_sample.rds` in *Results*
   
 - `bw.optim.list.p.25/50/75` and `bw.optim.list.pd.100`: via true underlying lagged covariance kernel <br>
   -> saved as `lag_Gamma_s_25/50/75_Bandwidth_optim.rds` in *Results* <br>
