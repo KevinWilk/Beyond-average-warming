@@ -15,7 +15,6 @@
 #### Run_simulation_120.sh
 - runs `Run_simluation.R` with 120 cores (MaRC3a, parallelization)
   
-#### Folder:
 ##### Under H0: p = 25, p = 50, p = 75
 - saved results of empirical quantile of 1000 repititions (`n_rep_1000_emp(1-alpha).rds`), empirical coverage rate (`dep/ind_n_rep_1000_emp(1-alpha).rds`), list of 1000 estimated quantiles (`dep/ind_n_rep_1000_q(1-alpha)_list.rds`)
 ##### Under H1: only for p = 25
