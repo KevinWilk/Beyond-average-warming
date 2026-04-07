@@ -16,7 +16,7 @@ library(gridExtra)
 
 
 source("Mod_biLocPol.R")
-source("weather temperature/R files/functions.R")
+source("weather temperature/functions.R")
 source("weather temperature/bandwidth selection/function_bandwidth_selection.R")
 
 
