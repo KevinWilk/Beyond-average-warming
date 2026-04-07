@@ -168,13 +168,13 @@ ggplot() +
              y = NULL) +
   
           scale_fill_manual("Confidence bands:", 
-                              values = c("dependent" = "black", "independent" = "#F8766D"),
+                              values = c("dependent" = "black", "independent" = "black"),
                               labels = c("dependent" = expression("with "*hat(q)[0.95]^{DMB}),
                                "independent" = expression("with "*hat(q)[0.95]^{IMB})),
                               breaks = c("dependent","independent")) +
   
           scale_colour_manual("Curves:", 
-                              values = c("hat Difference" = "yellow","Difference" = "#F8766D"),
+                              values = c("hat Difference" = "yellow","Difference" = "black"),
                               labels = c("hat Difference" = expression(hat(delta) - integral(hat(delta), "")*" d"*lambda),
                                          "Difference" = expression(delta - integral(delta, "")*" d"*lambda))) +
   
