@@ -17,5 +17,5 @@
 
 #### `function_evaluation.R` cotains
 -  `est.results()`: estimation of mean functions and differnce function
--  `q.MB()`: prepares arguments (lists `ls` and `ld`,  `cov`,  `depend = TRUE/FALSE`,  `int= TRUE/FALSE`) for Multiplier Bootstrap function `MB` and runs `MB`-function `B=1000`-times
+-  `q.MB()`: prepares arguments (lists `ls` and `ld`,  `cov`,  `depend = TRUE/FALSE`,  `int= TRUE/FALSE`) for Multiplier Bootstrap function `MB` and runs `MB()`-function `B=1000`-times
 -  `MB()`: indendent/dependent Multiplier Bootstrap
