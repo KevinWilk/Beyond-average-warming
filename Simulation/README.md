@@ -1,7 +1,7 @@
 ## Overview 
 
 #### `Simulation_Mod_biLocPol.R`
-- Grid setting `(1:j-0.5)/p` like in Berger and Holzmann (2025)
+- Grid setting `(1:j-0.5)/p` similar to Hajo Holzmann and Max Berger [arxiv](https://arxiv.org/abs/2407.13641)
 
 #### `function_bandwidth_selection.R` cotains
 - `h.optim`:          Optimal bandwidth selection with known function for univariate local polynomial estimator
