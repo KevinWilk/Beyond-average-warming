@@ -19,12 +19,18 @@ library(tensorA)
 
 
 
-l = 1
+source("Mod_biLocPol.R")
+source("weather temperature/R files/functions.R")
 
-data.example = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")
+############################################################################
+k = 1  # Change to: 1 (Berlin)                                            ##
+#                   2 (Frankfurt am Main)                                 ##
+#                   3 (Hamburg)                                           ##
+#                   4 (Munich)                                            ##
+data.example = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")      ##
+load(paste0("weather temperature/data sets/",data.example[[k]],".RData")) ##
+############################################################################
 
-load(paste0("weather temperature/data sets/",data.example[[k]],".RData"))
-#load(paste0("Application/Data examples/function_to_load.RData"))
 
 
 ########################################################
@@ -36,8 +42,11 @@ cov.s.list = list()
 cov.d.list = list()
 
 
-options(future.globals.maxSize = 20 * 1024^3) 
-plan(multisession, workers = future::availableCores()-2)
+# Optional: For parallelizing computations ####################
+options(future.globals.maxSize = 64 * 1024^3)                ##   
+plan(multisession, workers = 20) # MaRC3a: partition=mqtest ##
+#plan(multisession, workers = 60) # MaRC3a: partition=normal ##
+###############################################################
 
 
 for(m in 1:12){
@@ -60,7 +69,7 @@ for(m in 1:12){
     lag.k.Gamma.d = list()  
   
     file.s = paste0("weather temperature/kernel weights/full_w_s_lag0.rds")
-    file.d = paste0("weather temperature/kernel weights/full_w_d_lag0," ",.rds")  ##HIER PROBLEME
+    file.d = paste0("weather temperature/kernel weights/full_w_d_lag0_",sprintf("%03d", bandwidth.d[1,m] * 100),".rds") #bandwidth.d needs to be imported!!!!!!!!!!
   
     w   = readRDS(file.s)
     wd  = readRDS(file.d)
@@ -83,17 +92,17 @@ for(m in 1:12){
     })
     lag.k.Gamma = c(lag.k.Gamma,lag.k.Gamma.part2)
   
-    #lag.k.Gamma.d.part2 = future_lapply(1:2, function(k) {  
-    #  file.d = paste0("weather temperature R files/kernel weights/",data.example[[l]],month.name[m],"/dense/full_w.lag",k,".rds")
-    #  w.lag = readRDS(file.d)
-    #  n.year = unique(sample.dense$Year) 
-    #  lag.Gamma = Reduce(`+`,lapply(n.year,  function(j){eval.weights(w.lag, observation.transformation(sample.dense[which(sample.dense$Year %in% j), -1], lag = k, grid.type = "lesseq", periodic = T, m = 144), lag = k)}))/length(n.year)
-    #  lag.Gamma
-    #})
-    #lag.k.Gamma.d = c(lag.k.Gamma.d,lag.k.Gamma.d.part2)
+    lag.k.Gamma.d.part2 = future_lapply(1:2, function(k) {  
+      file.d = paste0("weather temperature/kernel weights/full_w_d_lag",k,"_",sprintf("%03d", bandwidth.d[1,m] * 100),".rds")
+      w.lag = readRDS(file.d)
+      n.year = unique(sample.dense$Year) 
+      lag.Gamma = Reduce(`+`,lapply(n.year,  function(j){eval.weights(w.lag, observation.transformation(sample.dense[which(sample.dense$Year %in% j), -1], lag = k, grid.type = "lesseq", periodic = T, m = 144), lag = k)}))/length(n.year)
+      lag.Gamma
+    })
+    lag.k.Gamma.d = c(lag.k.Gamma.d,lag.k.Gamma.d.part2)
   
     cov.s.list[[m]]   = lag.k.Gamma
-    #cov.d.list[[m]]   = lag.k.Gamma.d
+    cov.d.list[[m]]   = lag.k.Gamma.d
   
     rm(lag.k.Gamma,p)
     rm(lag.k.Gamma.d,pd)
@@ -103,6 +112,7 @@ for(m in 1:12){
 }
 
 plan(sequential)
+
 
 
 
@@ -132,11 +142,19 @@ rho.hat.d.df = rho.hat.d.df |> rownames_to_column("lag") |> mutate(lag = as.inte
 
 
  
-options(future.globals.maxSize = 20 * 1024^3) #laptop hat 21,9 GB zur Verfügung
-plan(multisession, workers = future::availableCores()-2)
+# Optional: For parallelizing computations ####################
+options(future.globals.maxSize = 64 * 1024^3)                ##   
+plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
+#plan(multisession, workers = 60) # MaRC3a: partition=normal ##
+###############################################################
+
+
 test.s.val = lapply(1:12, function(month) {inference.autocovariance.test(data.s.24h   |> select(1:27) , m = month, alpha = 0.95, max.lag = 12)})
 test.d.val = lapply(1:12, function(month) {inference.autocovariance.test(dense.hourly |> select(1:27) , m = month, alpha = 0.95, max.lag = 12)}) 
+
 plan(sequential)
+
+
 test.s.val = data.frame(lag = rep(c(0.6,2:11,12.5), times = 12), value = unlist(test.s.val), MONTH = factor(rep(month.name[1:length(test.s.val)], lengths(test.s.val)), levels = month.name))
 test.d.val = data.frame(lag = rep(c(0.6,2:11,12.5), times = 12), value = unlist(test.d.val), MONTH = factor(rep(month.name[1:length(test.d.val)], lengths(test.d.val)), levels = month.name))
 
@@ -167,6 +185,13 @@ month.d.max.lag = c(2, 2, 1, 1, 1, 2, 1, 2, 2, 1, 1, 1);month.s.max.lag = c(2, 1
 month.d.max.lag = c(2, 2, 1, 1, 1, 2, 1, 1, 2, 1, 2, 1);month.s.max.lag = c(2, 1, 2, 2, 3, 5, 2, 2, 1, 1, 1, 1)#Leipzig
 month.d.max.lag = c(2, 2, 1, 1, 1, 2, 2, 1, 2, 1, 1, 2);month.s.max.lag = c(3, 1, 2, 3, 3, 5, 2, 2, 1, 2, 1, 2)#Muenchen
 month.max.lag = apply(rbind(month.d.max.lag,month.s.max.lag),2,max) 
+
+
+
+
+
+
+
 
 
 #############################################################################################
