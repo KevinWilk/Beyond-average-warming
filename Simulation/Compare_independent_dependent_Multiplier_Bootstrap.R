@@ -159,8 +159,8 @@ KI.ind = data.frame(x = (1:p.eval-0.5)/p.eval,
 
 ggplot() +
   geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "dependent"),data = KI.dep, alpha = 0.2, col = NA) +
-    geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "independent"),data = KI.ind, col = "black", alpha = 0,size = 1, lty = 2)+
-      geom_line(aes(x, est.val, colour = "hat Difference"), data = delta.centered.df, lty = 1, size = 1) +
+    geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "independent"),data = KI.ind, col = "black", alpha = 0,size = 1.2, lty = 2)+
+      geom_line(aes(x, est.val, colour = "hat Difference"), data = delta.centered.df, lty = 2, size = 1.2) +
         geom_line(aes(x, true.val, colour = "Difference"), data = delta.centered.df, lty = 1, size = 1) +
   
         labs(subtitle = bquote("n = " * .(n) * ", p = " * .(p) *", " *tilde(n)*" = " * .(nd) * " and "*tilde(p)*" = " * .(pd)),
@@ -174,7 +174,7 @@ ggplot() +
                               breaks = c("dependent","independent")) +
   
           scale_colour_manual("Curves:", 
-                              values = c("hat Difference" = "yellow","Difference" = "black"),
+                              values = c("hat Difference" = "red","Difference" = "black"),
                               labels = c("hat Difference" = expression(hat(delta) - integral(hat(delta), "")*" d"*lambda),
                                          "Difference" = expression(delta - integral(delta, "")*" d"*lambda))) +
   
@@ -188,7 +188,8 @@ ggplot() +
                 
                 legend.position   = "right",
                 legend.box        = "vertical",
-                legend.key.height = unit(0.3, "cm")) +
+                legend.key.height = unit(0.3, "cm"),
+                legend.key.width  = unit(1.1, "cm")) +
   
           guides(fill   = guide_legend(nrow = 2, byrow = TRUE),
                  colour = guide_legend(nrow = 2, byrow = TRUE))
