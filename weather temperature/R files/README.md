@@ -13,10 +13,10 @@
 - `test.int()`: significance test of averaged daily temperature (integral of delta) for each month
   
 - `P.Cov()`: calculates linear projection (P) of lagged covariance matrix (_full_ or _diagonal_)
-- `q.month()`:
+- `q.month()`: runs `q.MB()` for each month 
 - `q.MB()`: prepares arguments (lists `ls` and `ld`,  `cov`,  `depend = TRUE/FALSE`,  `int= TRUE/FALSE`) for Multiplier Bootstrap function `MB` and runs `MB()`-function `B=1000`-times
 -  `MB()`: indendent/dependent Multiplier Bootstrap
--  `CB()`:
+-  `CB()`: constructs simultanous confidence bands for each month
   
 
 
