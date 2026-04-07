@@ -1,21 +1,21 @@
 ## Overview 
 
-#### `Coverage_and_power_of_Test.R`
-- Runs a simulation data setup 
-- Estimates quantile via the dependent/independent Multiplier Bootstrap with N^* = 1000
-- constructs confidence bands
-- after 1000 repetition: calculates empirical coverage rate
-- after 1000 repetition: calculates emirical power (under Alternative)
+#### `function_bandwidth_selection.R`
+- 
   
-#### `Run_simluation.R`
-- runs ‘Coverage_and_power_of_Test.R’ for different parameters
+#### `Run_simluation.R` cotains
+- `h.optim`:          Optimal bandwidth selection with known function for univariate local polynomial estimator
+- `h.optim.cov`:      Optimal bandwidth selection with known function for bivariate local polynomial estimator
+- `k.fold.hc.cv`:     K-Fold hv-block cross validation for univariate local polynomial estimator 
+- `k.fold.hc.cv.cov`: K-Fold hv-block cross validation for bivariate local polynomial estimator
   
-#### `Run_simulation_60.sh`
-- runs `Run_simluation.R` with 60 cores (MaRC3a, parallelization)
-#### Run_simulation_120.sh
-- runs `Run_simluation.R` with 120 cores (MaRC3a, parallelization)
-  
-##### Under H0: p = 25, p = 50, p = 75
-- saved results of empirical quantile of 1000 repititions (`n_rep_1000_emp(1-alpha).rds`), empirical coverage rate (`dep/ind_n_rep_1000_emp(1-alpha).rds`), list of 1000 estimated quantiles (`dep/ind_n_rep_1000_q(1-alpha)_list.rds`)
-##### Under H1: only for p = 25
-- saved results of empirical quantile of 1000 repititions (`n_rep_1000_emp(1-alpha).rds`), empirical coverage rate (`dep/ind_n_rep_1000_emp(1-alpha).rds`), empirical power (`dep/ind_n_rep_1000_power(1-alpha).rds`), list of 1000 estimated quantiles (`dep/ind_n_rep_1000_q(1-alpha)_list.rds`)
+#### `function_data_generating.R` cotains
+- `mu`,`mu_d` (mean functions) and `delta` (difference function)
+- `sim.d.OU`: discrete simulation of processes from section 4
+- `cov.d.OU`: True lagged covariance function (default: lag = 0)
+- `LR.cov.d.OU`: True long run covariance function
+
+#### `function_evaluation.R` cotains
+-  `est.results`: estimation of mean functions and differnce function
+-  `q.MB`: prepares arguments (lists `ls` and `ld`,  `cov`,  `depend = TRUE/FALSE`,  `int= TRUE/FALSE`) for Multiplier Bootstrap function `MB` and runs `MB` `B=1000`-times
+-  `MB`: 
