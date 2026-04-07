@@ -93,7 +93,6 @@ est.results = function(data.sparse,data.dense,bandwidth,from = 1,to = 12){
   p  = dim(data.sparse)[2]- 4
   pd = dim(data.dense)[2] - 4
   
-  #eval.grid =  (12:(120-12))/120  # every 15 Minute from -21:00 till +03:00: 4*3 + (4*24+1) + 4*3 = 12 + 97 + 12
   eval.grid =  (20:(136-20))/136  # every 15 Minute from -19:00 till +05:00: 4*5 + (4*24+1) + 4*5 = 20 + 97 + 20
   
   eval.tibble = tibble(TIME = hms::as_hms(seq(from = as.POSIXct("1970-01-01 00:00:00"),to   = as.POSIXct("1970-01-01 23:45:00"),by   = "15 min")))
@@ -210,33 +209,33 @@ cov.weights = function(data.sparse,data.dense,bandwidth.s,bandwidth.d,from = 1, 
   
   for(m in from:to){
     
-    file.s = paste0("Application/Data examples/",data.example[[l]],"/weights/",month.name[m],"/sparse/",eval.type,"_w_lag0.rds")
-    #file.d = paste0("Application/Data examples/",data.example[[l]],"/weights/",month.name[m],"/dense/", eval.type,"_w_lag0.rds")
+    file.s = paste0("weather temperature/kernel weights/",eval.type,"_w_s_lag0.rds")
+    file.d = paste0("weather temperature/kernel weights/",eval.type,"_w_d_lag0_",sprintf("%03d", bandwidth.d[1,m] * 100),".rds")
     
     w  = local.polynomial.weights(p,  bandwidth.s[1,m], p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "less", eval.type = eval.type, parallel.environment = F)
-    #wd = local.polynomial.weights(pd, bandwidth.d[1,m], p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "less", eval.type = eval.type, parallel.environment = F)    
+    wd = local.polynomial.weights(pd, bandwidth.d[1,m], p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "less", eval.type = eval.type, parallel.environment = F)    
     saveRDS(w, file = file.s)
-    #saveRDS(wd, file = file.d)
+    saveRDS(wd, file = file.d)
     rm(w); gc()
-    #rm(wd); gc()
+    rm(wd); gc()
     
     for(k in 1:max.lag){
       
-     file.s = paste0("Application/Data examples/",data.example[[l]],"/weights/",month.name[m],"/sparse/",eval.type,"_w_lag",k,".rds")
-     #file.d = paste0("Application/Data examples/",data.example[[l]],"/weights/",month.name[m],"/dense/", eval.type,"_w_lag",k,".rds")
+     file.s = paste0("weather temperature/kernel weights/",eval.type,"_w_s_lag",k,".rds")
+     file.d = paste0("weather temperature/kernel weights/",eval.type,"_w_d_lag",k,"_",sprintf("%03d", bandwidth.d[1,m] * 100),".rds")
     
      bw.lag   = round(bandwidth.s[1,m]*1.1^k, digits = 2)
-     #bw.d.lag = round(bandwidth.d[1,m]*1.1^k, digits = 2)
+     bw.d.lag = round(bandwidth.d[1,m]*1.1^k, digits = 2)
       
       w.lag   = lag.local.polynomial.weights(p, bw.lag, p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "lesseq", eval.type = eval.type, parallel.environment = F)
-      #wd.lag  = lag.local.polynomial.weights(pd,bw.d.lag, p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "lesseq", eval.type = eval.type, parallel.environment = F)
+      wd.lag  = lag.local.polynomial.weights(pd,bw.d.lag, p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "lesseq", eval.type = eval.type, parallel.environment = F)
       saveRDS(w.lag, file = file.s)
-      #saveRDS(wd.lag, file = file.d)
+      saveRDS(wd.lag, file = file.d)
       
       print(paste0("done: lag ", k))
       
       rm(w.lag); gc()
-      #rm(wd.lag); gc()
+      rm(wd.lag); gc()
     } 
     print(paste0("done: ", month.name[m]))
   }
