@@ -44,10 +44,11 @@ cov.d.list = list()
 
 # Optional: For parallelizing computations ####################
 options(future.globals.maxSize = 64 * 1024^3)                ##   
-plan(multisession, workers = 20) # MaRC3a: partition=mqtest ##
+plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
 #plan(multisession, workers = 60) # MaRC3a: partition=normal ##
 ###############################################################
 
+bandwidth.d = readRDS(paste0("weather temperature/bandwidth selection/Results/bw_Gamma_d_",data.example[[k]],".rds"))
 
 for(m in 1:12){
   
@@ -69,7 +70,7 @@ for(m in 1:12){
     lag.k.Gamma.d = list()  
   
     file.s = paste0("weather temperature/kernel weights/full_w_s_lag0.rds")
-    file.d = paste0("weather temperature/kernel weights/full_w_d_lag0_",sprintf("%03d", bandwidth.d[1,m] * 100),".rds") #bandwidth.d needs to be imported!!!!!!!!!!
+    file.d = paste0("weather temperature/kernel weights/full_w_d_lag0_",sprintf("%03d", as.integer(bandwidth.d[m] * 100)),".rds") #bandwidth.d needs to be imported!!!!!!!!!!
   
     w   = readRDS(file.s)
     wd  = readRDS(file.d)
@@ -83,7 +84,7 @@ for(m in 1:12){
     rm(w,lag.Gamma)
     rm(wd,lag.Gamma.d)
   
-    lag.k.Gamma.part2 = future_lapply(1:2, function(k) {
+    lag.k.Gamma.part2 = future_lapply(1:12, function(k) {
       file.s = paste0("weather temperature/kernel weights/full_w_s_lag",k,".rds")
       w.lag = readRDS(file.s)
       n.year = unique(sample.sparse$Year) 
@@ -92,8 +93,8 @@ for(m in 1:12){
     })
     lag.k.Gamma = c(lag.k.Gamma,lag.k.Gamma.part2)
   
-    lag.k.Gamma.d.part2 = future_lapply(1:2, function(k) {  
-      file.d = paste0("weather temperature/kernel weights/full_w_d_lag",k,"_",sprintf("%03d", bandwidth.d[1,m] * 100),".rds")
+    lag.k.Gamma.d.part2 = future_lapply(1:12, function(k) {  
+      file.d = paste0("weather temperature/kernel weights/full_w_d_lag",k,"_",sprintf("%03d", as.integer(bandwidth.d[m] * 100)),".rds")
       w.lag = readRDS(file.d)
       n.year = unique(sample.dense$Year) 
       lag.Gamma = Reduce(`+`,lapply(n.year,  function(j){eval.weights(w.lag, observation.transformation(sample.dense[which(sample.dense$Year %in% j), -1], lag = k, grid.type = "lesseq", periodic = T, m = 144), lag = k)}))/length(n.year)
