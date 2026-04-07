@@ -1,6 +1,6 @@
 ## Overview 
 
-#### `function_bandwidth_selection.R` cotains
+#### `functions.R` cotains
 
 - `k.fold.hc.cv()`: K-Fold hv-block cross validation for univariate local polynomial estimator
 - `bw_month()`:     runs `k.fold.hc.cv()` on densely (2000-2025) observed data sets and sparsly (1952-1972) observed residuals for each season with `K=5`
@@ -18,5 +18,5 @@
 -  `MB()`: indendent/dependent Multiplier Bootstrap
 -  `CB()`: constructs simultaneous confidence bands for each month
   
-
+#### `lagged Covariance function.R` cotains
 
