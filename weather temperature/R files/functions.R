@@ -380,7 +380,7 @@ MB = function(list1, list2, cov, dependent = F, int = F){
     if(dependent == T){
       
       
-      ln_func = function(n){floor(1.1*n^(1/4))}
+      ln_func = function(n){floor(1.25*n^(1/3))}
       k1 = function(h, n, func) {
           L = func(n)
           ifelse(abs(h) < L, 1 / (2*L - 1), 0)
