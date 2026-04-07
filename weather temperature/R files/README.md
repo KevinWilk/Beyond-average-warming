@@ -16,7 +16,7 @@
 - `q.month()`: runs `q.MB()` for each month 
 - `q.MB()`: prepares arguments (lists `ls` and `ld`,  `cov`,  `depend = TRUE/FALSE`,  `int= TRUE/FALSE`) for Multiplier Bootstrap function `MB` and runs `MB()`-function `B=1000`-times
 -  `MB()`: indendent/dependent Multiplier Bootstrap
--  `CB()`: constructs simultanous confidence bands for each month
+-  `CB()`: constructs simultaneous confidence bands for each month
   
 
 
