@@ -16,8 +16,8 @@ library(gridExtra)
 
 
 source("Mod_biLocPol.R")
-source("weather_temperature/functions.R")
-source("weather_temperature/bandwidth_selection/function_bandwidth_selection.R")
+source("weather temperature/functions.R")
+source("weather temperature/bandwidth selection/function_bandwidth_selection.R")
 
 
 
@@ -45,13 +45,13 @@ for(k in 1:4){
   #                   3 (Hamburg)                                           ##
   #                   4 (Munich)                                            ##
   data.example = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")      ##
-  load(paste0("weather_temperature/data_sets/",data.example[[k]],".RData")) ##
+  load(paste0("weather temperature/data sets/",data.example[[k]],".RData")) ##
   ############################################################################
 
 
 
   cov.Bandwidths = cov.bw.month(data.sparse.days.5h, h.seq = seq(0.1,0.4,0.01), period.n = 24)
-  file = paste0("weather_temperature/bandwidth_selection/Results/bw_Gamma_s_",data.example[[k]],".rds")
+  file = paste0("weather temperature/bandwidth selection/Results/bw_Gamma_s_",data.example[[k]],".rds")
   saveRDS(cov.Bandwidths,file)
   print("save done")
 
@@ -88,13 +88,13 @@ for(k in 1:4){
   #                   3 (Hamburg)                                           ##
   #                   4 (Munich)                                            ##
   data.example = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")      ##
-  load(paste0("weather_temperature/data_sets/",data.example[[k]],".RData")) ##  
+  load(paste0("weather temperature/data sets/",data.example[[k]],".RData")) ##  
   ############################################################################
   
   
 
   cov.Bandwidths = cov.bw.month(data.dense.days.3h, h.seq = seq(0.06,0.24,0.01), period.n = 144)
-  file = paste0("weather_temperature/bandwidth_selection/Results/bw_Gamma_d_",data.example[[k]],".rds")
+  file = paste0("weather temperature/bandwidth selection/Results/bw_Gamma_d_",data.example[[k]],".rds")
   saveRDS(cov.Bandwidths,file)
   print("save done")
 
