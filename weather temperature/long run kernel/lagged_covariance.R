@@ -45,7 +45,7 @@ cov.d.list = list()
 
 # Optional: For parallelizing computations ####################
 options(future.globals.maxSize = 64 * 1024^3)                ##   
-plan(multisession, workers = 20) # MaRC3a: partition=mqtest ##
+plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
 #plan(multisession, workers = 60) # MaRC3a: partition=normal ##
 ###############################################################
 
@@ -177,150 +177,26 @@ plan(sequential)
 
 
 
+max.lag.d = rho.hat.d.df |>
+              arrange(MONTH, lag) |>
+                mutate(threshold = test.d.val$value) |>
+                  group_by(MONTH) |>
+                    summarise(first_lag = lag[which.max(value < threshold)[1]] - 1,.groups = "drop")
 
-ggplot() +
-  geom_bar( aes(x = lag,     y = value), stat = "identity", fill = "turquoise",width = 0.4, data = rho.hat.d.df, alpha = 0.7) +
-  geom_line(aes(x = lag,     y = value), test.d.val, col = "green3", size = 1.1, lty = 2)+
-  geom_line(aes(x = lag+0.3, y = value), test.s.val, col = "blue", size = 1.1, lty = 2)+
-  geom_bar( aes(x = lag+0.3, y = value),  stat = "identity", fill = "darkblue", width = 0.4, data = rho.hat.s.df, alpha = 0.5) +
-  labs(x = "Lag", y = bquote(hat(rho)[Lag]) ,title = "") +
-  
-  theme(plot.title   = element_text(size = 15),
-        legend.text  = element_text(size = 15),
-        strip.text   = element_text(size = 15),
-        legend.title = element_text(size = 15),
-        axis.title.x = element_text(size = 15),     
-        axis.title.y = element_text(size = 15),
-        axis.text.x  = element_text(size = 15),     
-        axis.text.y  = element_text(size = 15)) +
-  
-  scale_y_continuous(breaks = c(0,0.25,0.5), limits = c(0,0.7)) +
-  scale_x_continuous(breaks = c(1,4,8,12), limits = c(0.5,12.8)) +
-  facet_wrap(~ MONTH)
+max.lag.s = rho.hat.s.df |>
+              arrange(MONTH, lag) |>
+                mutate(threshold = test.s.val$value) |>
+                  group_by(MONTH) |>
+                    summarise(first_lag = lag[which(value < threshold)[1]] - 1,.groups = "drop") 
 
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/lag test.png"), width = 32, height = 18, units = "cm", dpi = 300)
+
+
+max.lag = data.frame(max.lag.d$MONTH, max.lag = apply(cbind(max.lag.d$first_lag,max.lag.s$first_lag),1,max))
+
+saveRDS(max.lag , paste0("weather temperature/long run kernel/Results/max_lag_",data.example[[k]],".rds"))
 
 
 
 
-month.d.max.lag = c(2, 2, 1, 1, 1, 2, 2, 1, 2, 1, 2, 1);month.s.max.lag = c(2, 1, 2, 2, 3, 4, 2, 2, 2, 2, 1, 1)# Berlin
-month.d.max.lag = c(2, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2);month.s.max.lag = c(2, 0, 2, 4, 2, 4, 4, 2, 0, 1, 1, 1)# Frankfurt
-month.d.max.lag = c(2, 2, 1, 1, 1, 2, 1, 2, 2, 1, 1, 1);month.s.max.lag = c(2, 1, 1, 2, 1, 4, 1, 2, 0, 1, 1, 1)# Hamburg
-month.d.max.lag = c(2, 2, 1, 1, 1, 2, 1, 1, 2, 1, 2, 1);month.s.max.lag = c(2, 1, 2, 2, 3, 5, 2, 2, 1, 1, 1, 1)# Leipzig
-month.d.max.lag = c(2, 2, 1, 1, 1, 2, 2, 1, 2, 1, 1, 2);month.s.max.lag = c(3, 1, 2, 3, 3, 5, 2, 2, 1, 2, 1, 2)# Muenchen
-month.max.lag = apply(rbind(month.d.max.lag,month.s.max.lag),2,max) 
-
-
-
-
-
-
-
-
-
-#############################################################################################
-##### Plot of sd of each month ##############################################################
-#############################################################################################
-
-start.24 = 21; end.24 = 117 
-
-sqrt.d.month = lapply(1:12, function(m) {sqrt(diag(cov.d.list[[m]][[1]][start.24:end.24,start.24:end.24]))})
-sqrt.s.month = lapply(1:12, function(m) {sqrt(diag(cov.s.list[[m]][[1]][start.24:end.24,start.24:end.24]))})
-lr.sqrt.d.month = lapply(1:12, function(m) {sqrt(Reduce(`+`,lapply(1:(month.max.lag[m]+1),  function(j){diag(cov.d.list[[m]][[j]][start.24:end.24,start.24:end.24]) * ifelse(j >= 2, 2*(1-(j-1)/(month.max.lag[m]+1)), 1) })))})
-lr.sqrt.s.month = lapply(1:12, function(m) {sqrt(Reduce(`+`,lapply(1:(month.max.lag[m]+1),  function(j){diag(cov.s.list[[m]][[j]][start.24:end.24,start.24:end.24]) * ifelse(j >= 2, 2*(1-(j-1)/(month.max.lag[m]+1)), 1) })))})
-eval.tibble = tibble(TIME = rep(hms::as_hms(c(seq(from = as.POSIXct("1970-01-01 00:00:00"),to   = as.POSIXct("1970-01-01 23:45:00"),by   = "15 min"), as.POSIXct("1970-01-01 23:59:59"))), times = 12))
-sqrt.month = data.frame(TIME = eval.tibble, SD.sparse = unlist(sqrt.s.month), SD.sparse.lr = unlist(lr.sqrt.s.month), SD.dense = unlist(sqrt.d.month) , SD.dense.lr = unlist(lr.sqrt.d.month), MONTH = rep(month.abb,each = 97))
-sqrt.month$MONTH = factor(sqrt.month$MONTH,levels = month.abb)
-rm(lr.sqrt.s.month,lr.sqrt.d.month,sqrt.d.month,sqrt.s.month,eval.tibble)
-
-month.colors = c("Dec" = "#08306B","Jan" = "#2171B5","Feb" = "#6BAED6","Mar" = "#74C476","Apr" = "#31A354","May" = "#006D2C",
-                 "Jun" = "#FB6A4A","Jul" = "#DE2D26","Aug" = "#A50F15", "Sep" = "#DFC27D","Oct" = "#BF812D","Nov" = "#8C510A")
-month.lty = rep(c(1,2,4), times = 4)
-names(month.lty) = month.abb
-
-ggplot() +
-  geom_line(mapping = aes(x = TIME, y = SD.sparse, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("")) +
-  scale_color_manual(values = month.colors, name = "Month") +
-  scale_linetype_manual(values = month.lty,limits = month.abb, name = "Month") +
-  
-  theme(plot.title   = element_text(size = 25),
-        legend.text  = element_text(size = 29),
-        strip.text   = element_text(size = 25),
-        legend.title = element_text(size = 30),
-        axis.title.x = element_text(size = 25),     
-        axis.title.y = element_text(size = 25),
-        axis.text.x  = element_text(size = 25),     
-        axis.text.y  = element_text(size = 25)) +
-  
-  scale_y_continuous(breaks = c(0, 2.5, 5 , 7.5, 10), limits = c(0, 9.5)) +
-  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/sd sparse monthly.png"), width = 28, height = 18, units = "cm", dpi = 300)
-
-ggplot() +
-  geom_line(mapping = aes(x = TIME, y = SD.dense, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("")) +
-  scale_color_manual(values = month.colors, name = "Month") +
-  scale_linetype_manual(values = month.lty,limits = month.abb, name = "Month") +
-  guides(colour      = guide_legend(override.aes = list(colour = NA, linetype = 0))) +
-  
-  theme(plot.title   = element_text(size =25),
-        legend.text  = element_text(size =29,  color = "transparent"),
-        strip.text   = element_text(size = 25, color = "transparent"),
-        legend.title = element_text(size = 30, color = "transparent"),
-        axis.title.x = element_text(size = 25),     
-        axis.title.y = element_text(size = 25),
-        axis.text.x  = element_text(size = 25),     
-        axis.text.y  = element_text(size = 25),
-        legend.position = "right",
-        legend.key = element_rect(fill = NA, colour = NA),
-        legend.background = element_rect(fill = "transparent", color = NA)) +
-  
-  scale_y_continuous(breaks = c(0, 2.5, 5 , 7.5, 10), limits = c(0, 9.5)) +
-  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/sd dense monthly.png"), width = 28, height = 18, units = "cm", dpi = 300)
-
-
-ggplot() +
-  geom_line(mapping = aes(x = TIME, y = SD.sparse.lr, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("")) +
-  scale_color_manual(values = month.colors, name = "Month") +
-  scale_linetype_manual(values = month.lty,limits = month.abb, name = "Month") +
-  
-  theme(plot.title   = element_text(size =25),
-        legend.text  = element_text(size =29),
-        strip.text   = element_text(size = 25),
-        legend.title = element_text(size = 30),
-        axis.title.x = element_text(size = 25),     
-        axis.title.y = element_text(size = 25),
-        axis.text.x  = element_text(size = 25),     
-        axis.text.y  = element_text(size = 25)) +
-  
-  scale_y_continuous(breaks = c(0, 2.5, 5 , 7.5, 10), limits = c(0, 9.5)) +
-  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/sd sparse monthly long run.png"), width = 28, height = 18, units = "cm", dpi = 300)
-
-ggplot() +
-  geom_line(mapping = aes(x = TIME, y = SD.dense.lr, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("")) +
-  scale_color_manual(values = month.colors, name = "Month") +
-  scale_linetype_manual(values = month.lty,limits = month.abb, name = "Month") +
-  guides(colour      = guide_legend(override.aes = list(colour = NA, linetype = 0))) +
-  
-  theme(plot.title   = element_text(size = 25),
-        legend.text  = element_text(size = 29, color = "transparent"),
-        strip.text   = element_text(size = 25, color = "transparent"),
-        legend.title = element_text(size = 30, color = "transparent"),
-        axis.title.x = element_text(size = 25),     
-        axis.title.y = element_text(size = 25),
-        axis.text.x  = element_text(size = 25),     
-        axis.text.y  = element_text(size = 25),
-        legend.position = "right",
-        legend.key = element_rect(fill = NA, colour = NA),
-        legend.background = element_rect(fill = "transparent", color = NA)) +
-  
-  scale_y_continuous(breaks = c(0, 2.5, 5 , 7.5, 10), limits = c(0, 9.5)) +
-  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/sd dense monthly long run.png"), width = 28, height = 18, units = "cm", dpi = 300)
 
 
