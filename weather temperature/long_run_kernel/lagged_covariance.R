@@ -70,9 +70,9 @@ for(m in 1:12){
     lag.k.Gamma   = list()
     lag.k.Gamma.d = list()  
   
-    file.s = paste0("weather_temperature/kernel_weights/full_w_s_lag0.rds")
-    if(bandwidth.d[m] < 0.1){ file.d = paste0("weather_temperature/kernel_weights/full_w_d_lag0_",sprintf("%03d", as.integer(bandwidth.d[m] * 100)),".rds")
-    }else{                    file.d = paste0("weather_temperature/kernel_weights/full_w_d_lag0_",sprintf("%02d", as.integer(bandwidth.d[m] * 10)),".rds")}
+    file.s = paste0("weather_temperature/kernel weights/full_w_s_lag0.rds")
+    if(bandwidth.d[m] < 0.1){ file.d = paste0("weather_temperature/kernel weights/full_w_d_lag0_",sprintf("%03d", as.integer(bandwidth.d[m] * 100)),".rds")
+    }else{                    file.d = paste0("weather_temperature/kernel weights/full_w_d_lag0_",sprintf("%02d", as.integer(bandwidth.d[m] * 10)),".rds")}
     w   = readRDS(file.s)
     wd  = readRDS(file.d)
   
@@ -86,7 +86,7 @@ for(m in 1:12){
     rm(wd,lag.Gamma.d)
   
     lag.k.Gamma.part2 = future_lapply(1:12, function(k) {
-      file.s = paste0("weather_temperature/kernel_weights/full_w_s_lag",k,".rds")
+      file.s = paste0("weather_temperature/kernel weights/full_w_s_lag",k,".rds")
       w.lag = readRDS(file.s)
       n.year = unique(sample.sparse$Year) 
       lag.Gamma = Reduce(`+`,lapply(n.year,  function(j){eval.weights(w.lag, observation.transformation(sample.sparse[which(sample.sparse$Year %in% j), -1], lag = k, grid.type = "lesseq", periodic = T, m = 24), lag = k)}))/length(n.year)
@@ -95,8 +95,8 @@ for(m in 1:12){
     lag.k.Gamma = c(lag.k.Gamma,lag.k.Gamma.part2)
   
     lag.k.Gamma.d.part2 = future_lapply(1:12, function(k) {  
-      if(bandwidth.d[m] < 0.1){ file.d = paste0("weather_temperature/kernel_weights/full_w_d_lag",k,"_",sprintf("%03d", as.integer(bandwidth.d[m] * 100)),".rds")}
-      else{                     file.d = paste0("weather_temperature/kernel_weights/full_w_d_lag",k,"_",sprintf("%02d", as.integer(bandwidth.d[m] * 10)),".rds")}
+      if(bandwidth.d[m] < 0.1){ file.d = paste0("weather_temperature/kernel weights/full_w_d_lag",k,"_",sprintf("%03d", as.integer(bandwidth.d[m] * 100)),".rds")}
+      else{                     file.d = paste0("weather_temperature/kernel weights/full_w_d_lag",k,"_",sprintf("%02d", as.integer(bandwidth.d[m] * 10)),".rds")}
       w.lag = readRDS(file.d)
       n.year = unique(sample.dense$Year) 
       lag.Gamma = Reduce(`+`,lapply(n.year,  function(j){eval.weights(w.lag, observation.transformation(sample.dense[which(sample.dense$Year %in% j), -1], lag = k, grid.type = "lesseq", periodic = T, m = 144), lag = k)}))/length(n.year)
