@@ -32,6 +32,8 @@ plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
 
 
 
+
+
 ########################################################################################################################
 ################ Mean and difference function: Cross Validation ########################################################
 ########################################################################################################################
@@ -56,8 +58,6 @@ for(k in 1:4){
 
   
 }
-
-
 
 
 
@@ -92,7 +92,6 @@ for(k in 1:4){
 
 }
                           
-plan(sequential)
 
 
 
@@ -108,11 +107,6 @@ plan(sequential)
 
 ### Only 30 hours data set possilbe due to "Killed" for 34 hours dataset (60 cores).
 
-# Optional: For parallelizing computations ####################
-options(future.globals.maxSize = 64 * 1024^3)                ##   
-plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
-#plan(multisession, workers = 60) # MaRC3a: partition=normal ##
-###############################################################
 
 
 for(k in 1:4){
