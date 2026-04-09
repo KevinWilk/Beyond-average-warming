@@ -31,6 +31,41 @@ plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
 
 
 
+
+########################################################################################################################
+################ Mean and difference function: Cross Validation ########################################################
+########################################################################################################################
+
+
+for(k in 1:4){
+  
+  ############################################################################
+  #        Change to: 1 (Berlin)                                            ##
+  #                   2 (Frankfurt am Main)                                 ##
+  #                   3 (Hamburg)                                           ##
+  #                   4 (Munich)                                            ##
+  data.example = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")      ##
+  load(paste0("weather temperature/data sets/",data.example[[k]],".RData")) ##
+  ############################################################################
+
+  
+  Bandwidths = bw_month(data.s.34h,data.d.34h)
+  file = paste0("weather temperature/bandwidth selection/Results/bw_",data.example[[k]],".rds")
+  saveRDS(cov.Bandwidths,file)
+  print("save done")
+
+  
+}
+
+
+
+
+
+
+
+
+
+
 ########################################################################################################################
 ################ Covariance kernel: Cross Validation on sparsely observed data set (1952-1972) #########################
 ########################################################################################################################
