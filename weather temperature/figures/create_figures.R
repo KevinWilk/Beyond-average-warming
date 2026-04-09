@@ -29,7 +29,7 @@ source("weather temperature/functions.R")
 
 
 ###############################################################################
-k = 2  # Change to: 1 (Berlin)                                               ##
+k = 1  # Change to: 1 (Berlin)                                               ##
 #                   2 (Frankfurt am Main)                                    ##
 #                   3 (Hamburg)                                              ##
 #                   4 (Munich)                                               ##
@@ -394,7 +394,7 @@ ggplot() +
   labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of  "* delta - integral(delta) * " d" *lambda)) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = centered.delta.conf,  fill  = "grey6",  col = NA, alpha = 0.3,size = 0.5)+
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf.compare, fill  = "grey6",  col = NA, alpha = 0.2,size = 0.5, lty = 2)+
-  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "yellow", size = 0.8, show.legend = F) +
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "red", size = 0.8, show.legend = F, linetype = 2) +
   
   theme(plot.title = element_text(size =16),
         legend.text = element_text(size =10),
@@ -416,7 +416,7 @@ ggplot() +
   labs(x = "Time", y = "Temperature in °C",title = bquote("Estimation of  "* delta - integral(delta) * " d" *lambda)) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = centered.delta.conf, fill  = "grey6",  col = NA, alpha = 0.3,size = 0.5)+
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf.compare,  fill  = "grey6",  col = NA, alpha = 0.2,size = 0.5, lty = 2)+
-  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "yellow", size = 0.9, show.legend = F) +
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "red", size = 0.9, show.legend = F, linetype = 2) +
   
   theme(plot.title = element_text(size =26),
         legend.text = element_text(size =10),
