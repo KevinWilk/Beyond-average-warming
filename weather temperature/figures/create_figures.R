@@ -28,14 +28,15 @@ library(gridExtra)
 source("weather temperature/functions.R")
 
 
-############################################################################
-k = 4  # Change to: 1 (Berlin)                                            ##
-#                   2 (Frankfurt am Main)                                 ##
-#                   3 (Hamburg)                                           ##
-#                   4 (Munich)                                            ##
-data.example = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")      ##
-load(paste0("weather temperature/data sets/",data.example[[k]],".RData")) ##
-############################################################################
+###############################################################################
+k = 2  # Change to: 1 (Berlin)                                               ##
+#                   2 (Frankfurt am Main)                                    ##
+#                   3 (Hamburg)                                              ##
+#                   4 (Munich)                                               ##
+data.example     = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")     ##
+data.example.pic = list("Berlin", "Frankfurt am Main", "Hamburg", "Munich")  ##
+load(paste0("weather temperature/data sets/",data.example[[k]],".RData"))    ##
+###############################################################################
 
 
 
@@ -254,7 +255,7 @@ if(k == 1){
 ggplot() +
   geom_line(aes(x = TIME, y = ESTIMATE), data =est$dense, color = "turquoise", lty = 1, size = 1.5) +
   geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = est$sparse, color = "darkblue", size = 1.5, lty = 2, show.legend = F) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example[[k]]) *" (Germany): Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"})) +
+  labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"})) +
   theme(plot.title = element_text(size =16),
         legend.text = element_text(size =10),
         strip.text = element_text(size = 15),
@@ -293,6 +294,57 @@ ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), wi
 
 
 
+########################################################################
+#### Plot of difference function and integral with confidence bands ####
+########################################################################
+
+integral.conf = readRDS(paste0("weather temperature/confidence bands/Results/CB_integral_",data.example[[k]],".rds"))
+delta.conf    = readRDS(paste0("weather temperature/confidence bands/Results/CB_delta_",data.example[[k]],".rds"))
+
+
+if(k == 1){
+  
+ggplot() +
+  labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of  "* delta * "  and  " * integral(delta) * " d" *lambda)) +
+  geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = integral.conf, fill = "darkred", col = NA, alpha = 0.3,size = 0.2)+
+  geom_line(aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data =est$delta_int, lty = 2, size = 1.8, alpha = 1, show.legend = T) +
+  geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf, fill = "grey6", col = NA, alpha = 0.2,size = 0.5)+
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data = est$delta, size = 1.8, show.legend = F) +
+  scale_color_gradient2(mid = "darkblue", high = "red", midpoint = -1, oob = scales::squish, limits = c(-1, 3), name = "°C")+
+  theme(plot.title = element_text(size =16),
+        legend.text = element_text(size =14),
+        legend.title = element_text(size =14),
+        strip.text = element_text(size = 15),
+        axis.title.x = element_text(size = 14),     
+        axis.title.y = element_text(size = 14),
+        axis.text.x  = element_text(size = 12),     
+        axis.text.y  = element_text(size = 12))+
+  scale_y_continuous(breaks = c(-1,0,1,2,3,4,5), limits = c(-1.7, 5.9)) +
+  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
+  facet_wrap(~ MONTH)
+ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
+
+}else{
+
+ggplot() +
+  labs(x = "Time", y = "Temperature in °C",title = bquote("Estimation of  "* delta * "  and  " * integral(delta) * " d" *lambda)) +
+  geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = integral.conf, fill = "darkred", col = NA, alpha = 0.3,size = 0.2)+
+  geom_line(aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data =est$delta_int, lty = 2, size = 1.8, alpha = 1, show.legend = F) +
+  geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf, fill = "grey6", col = NA, alpha = 0.2,size = 0.5)+
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data = est$delta, size = 1.8, show.legend = F) +
+  scale_color_gradient2(mid = "darkblue", high = "red", midpoint = -1, oob = scales::squish, limits = c(-1, 3), name = "°C")+
+  theme(plot.title = element_text(size =26),
+        strip.text = element_text(size = 22),
+        axis.title.x = element_text(size = 20),     
+        axis.title.y = element_text(size = 20),
+        axis.text.x  = element_text(size = 17),     
+        axis.text.y  = element_text(size = 17))+
+  scale_y_continuous(breaks = c(0,2.5,5), limits = c(-1.7, 5.9)) +
+  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20"))+
+  facet_wrap(~ MONTH, ncol = 3, nrow = 4)
+ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 16, height = 24, units = "cm", dpi = 300)
+
+}
 
 
 
@@ -302,9 +354,85 @@ ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), wi
 
 
 
+#####################################################################
+# Calculating diagonal of long run covariance matrix for each month #
+#####################################################################
+
+lr.Gamma.d.month = lapply(1:12, function(m) {lr.cov  = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                                                         function(j){if(j >= 2){
+                                                                           (cov.d.list[[m]][[j]][start.24:end.24,start.24:end.24]+t(cov.d.list[[m]][[j]][start.24:end.24,start.24:end.24]))*(1-(j-1)/(max.lag[m,2]+1))
+                                                                         }else{cov.d.list[[m]][[j]][start.24:end.24,start.24:end.24]} 
+                                                                         }))
+return(diag(lr.cov))})
+
+lr.Gamma.s.month = lapply(1:12, function(m) {lr.cov  = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                                                         function(j){if(j >= 2){
+                                                                           (cov.s.list[[m]][[j]][start.24:end.24,start.24:end.24]+t(cov.s.list[[m]][[j]][start.24:end.24,start.24:end.24]))*(1-(j-1)/(max.lag[m,2]+1))
+                                                                         }else{cov.s.list[[m]][[j]][start.24:end.24,start.24:end.24]} 
+                                                                         }))
+return(diag(lr.cov))})
+
+lr.Gamma = lapply(1:12, function(m) { sample.dense  = data.d.24h.hourly %>% filter(MONTH %in% month.name[m]) |> dplyr::select(4:dim(data.d.24h.hourly)[2])
+                                      sample.dense  = sample.dense[rowSums(is.na(sample.dense)) == 0,]
+                                      sample.sparse = data.s.24h %>% filter(MONTH %in% month.name[m])|> dplyr::select(4:dim(data.s.24h)[2])
+                                      sample.sparse = sample.sparse[rowSums(is.na(sample.sparse)) == 0,]
+                                      
+                                      return(lr.Gamma.s.month[[m]] + dim(sample.sparse)[1] / dim(sample.dense)[1] * lr.Gamma.d.month[[m]])
+                                     })
 
 
+centered.delta.conf = readRDS(paste0("weather temperature/confidence bands/Results/CB_centered_delta_",data.example[[k]],".rds"))
 
+# Comparison: Confidence bands of difference function (not centered)
+q.list              = readRDS(paste0("weather temperature/confidence bands/Results/quantile_",data.example[[k]],".rds"))
+delta.conf.compare  = CB(data.s.34h, est, lr.Gamma, q.list[1,], center = T)
+
+
+if(k == 1){
+
+ggplot() +
+  labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of  "* delta - integral(delta) * " d" *lambda)) +
+  geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = centered.delta.conf,  fill  = "grey6",  col = NA, alpha = 0.3,size = 0.5)+
+  geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf.compare, fill  = "grey6",  col = NA, alpha = 0.2,size = 0.5, lty = 2)+
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "yellow", size = 0.8, show.legend = F) +
+  
+  theme(plot.title = element_text(size =16),
+        legend.text = element_text(size =10),
+        strip.text = element_text(size = 15),
+        legend.title = element_text(size = 11),
+        axis.title.x = element_text(size = 14),     
+        axis.title.y = element_text(size = 14),
+        axis.text.x  = element_text(size = 12),     
+        axis.text.y  = element_text(size = 12)) +
+  
+  ylim(-3.6, 4)+
+  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
+  facet_wrap(~ MONTH)
+ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
+
+}else{
+
+ggplot() +
+  labs(x = "Time", y = "Temperature in °C",title = bquote("Estimation of  "* delta - integral(delta) * " d" *lambda)) +
+  geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = centered.delta.conf, fill  = "grey6",  col = NA, alpha = 0.3,size = 0.5)+
+  geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf.compare,  fill  = "grey6",  col = NA, alpha = 0.2,size = 0.5, lty = 2)+
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "yellow", size = 0.9, show.legend = F) +
+  
+  theme(plot.title = element_text(size =26),
+        legend.text = element_text(size =10),
+        strip.text = element_text(size = 22),
+        legend.title = element_text(size = 11),
+        axis.title.x = element_text(size = 20),     
+        axis.title.y = element_text(size = 20),
+        axis.text.x  = element_text(size = 17),     
+        axis.text.y  = element_text(size = 17)) +
+  
+  scale_y_continuous(breaks = c(-3,0,3), limits = c(-3.6, 4)) +
+  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20"))+
+  facet_wrap(~ MONTH, ncol = 3, nrow = 4)
+ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k]],".png"), width = 16, height = 24, units = "cm", dpi = 300)
+
+}
 
 
 
