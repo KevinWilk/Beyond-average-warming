@@ -22,7 +22,7 @@ source("weather temperature/bandwidth selection/function_bandwidth_selection.R")
 
 # Optional: For parallelizing computations ####################
 options(future.globals.maxSize = 64 * 1024^3)                ##   
-plan(multisession, workers = 20) # MaRC3a: partition=mqtest ##
+plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
 #plan(multisession, workers = 60) # MaRC3a: partition=normal ##
 ###############################################################
 
