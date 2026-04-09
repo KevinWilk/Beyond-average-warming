@@ -29,7 +29,7 @@ source("weather temperature/functions.R")
 
 
 ############################################################################
-k = 1  # Change to: 1 (Berlin)                                            ##
+k = 4  # Change to: 1 (Berlin)                                            ##
 #                   2 (Frankfurt am Main)                                 ##
 #                   3 (Hamburg)                                           ##
 #                   4 (Munich)                                            ##
