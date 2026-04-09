@@ -7,6 +7,48 @@
 ####################################################################################################
 
 
+library(crayon)
+library(ggplot2)
+library(reshape2)
+library(locpol)
+library(biLocPol)
+library(interp)
+library(stats)
+library(future)
+library(future.apply)
+library(parallel)
+library(lubridate)
+library(hms)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(gridExtra)
+
+
+source("weather temperature/functions.R")
+
+
+############################################################################
+k = 1  # Change to: 1 (Berlin)                                            ##
+#                   2 (Frankfurt am Main)                                 ##
+#                   3 (Hamburg)                                           ##
+#                   4 (Munich)                                            ##
+data.example = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")      ##
+load(paste0("weather temperature/data sets/",data.example[[k]],".RData")) ##
+############################################################################
+
+
+
+
+
+
+
+
+
+#############################################################################################
+##### Plot of inference autocovariance test results of each month ###########################
+#############################################################################################
+
 
 # Loading estimated lag covariance kernels for lag = 0,...,12 
 cov.s.list = readRDS(paste0("weather temperature/long run kernel/Results/list_Gamma_s_",data.example[[k]],".rds")) 
@@ -37,10 +79,6 @@ test.d.val = readRDS(paste0("weather temperature/long run kernel/Results/test_ma
 
 
 
-#############################################################################################
-##### Plot of inference autocovariance test results of each month ###########################
-#############################################################################################
-
 ggplot() +
   geom_bar( aes(x = lag,     y = value), stat = "identity", fill = "turquoise",width = 0.4, data = rho.hat.d.df, alpha = 0.7) +
   geom_line(aes(x = lag,     y = value), test.d.val, col = "green3", size = 1.1, lty = 2)+
@@ -61,7 +99,12 @@ ggplot() +
   scale_x_continuous(breaks = c(1,4,8,12), limits = c(0.5,12.8)) +
   facet_wrap(~ MONTH)
 
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/lag test.png"), width = 32, height = 18, units = "cm", dpi = 300)
+ggsave(paste0("weather temperature/figures/lag_test_",data.example[[k]],".png"), width = 32, height = 18, units = "cm", dpi = 300)
+
+
+
+
+
 
 
 
@@ -70,12 +113,16 @@ ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/lag test
 #############################################################################################
 
 
+# Loading maximum lag of long run kernel 
+max.lag = readRDS(paste0("weather temperature/long run kernel/Results/max_lag_",data.example[[k]],".rds"))
+
+
 start.24 = 21; end.24 = 117 
 
 sqrt.d.month = lapply(1:12, function(m) {sqrt(diag(cov.d.list[[m]][[1]][start.24:end.24,start.24:end.24]))})
 sqrt.s.month = lapply(1:12, function(m) {sqrt(diag(cov.s.list[[m]][[1]][start.24:end.24,start.24:end.24]))})
-lr.sqrt.d.month = lapply(1:12, function(m) {sqrt(Reduce(`+`,lapply(1:(month.max.lag[m]+1),  function(j){diag(cov.d.list[[m]][[j]][start.24:end.24,start.24:end.24]) * ifelse(j >= 2, 2*(1-(j-1)/(month.max.lag[m]+1)), 1) })))})
-lr.sqrt.s.month = lapply(1:12, function(m) {sqrt(Reduce(`+`,lapply(1:(month.max.lag[m]+1),  function(j){diag(cov.s.list[[m]][[j]][start.24:end.24,start.24:end.24]) * ifelse(j >= 2, 2*(1-(j-1)/(month.max.lag[m]+1)), 1) })))})
+lr.sqrt.d.month = lapply(1:12, function(m) {sqrt(Reduce(`+`,lapply(1:(max.lag[m,2]+1),  function(j){diag(cov.d.list[[m]][[j]][start.24:end.24,start.24:end.24]) * ifelse(j >= 2, 2*(1-(j-1)/(max.lag[m,2]+1)), 1) })))})
+lr.sqrt.s.month = lapply(1:12, function(m) {sqrt(Reduce(`+`,lapply(1:(max.lag[m,2]+1),  function(j){diag(cov.s.list[[m]][[j]][start.24:end.24,start.24:end.24]) * ifelse(j >= 2, 2*(1-(j-1)/(max.lag[m,2]+1)), 1) })))})
 eval.tibble = tibble(TIME = rep(hms::as_hms(c(seq(from = as.POSIXct("1970-01-01 00:00:00"),to   = as.POSIXct("1970-01-01 23:45:00"),by   = "15 min"), as.POSIXct("1970-01-01 23:59:59"))), times = 12))
 sqrt.month = data.frame(TIME = eval.tibble, SD.sparse = unlist(sqrt.s.month), SD.sparse.lr = unlist(lr.sqrt.s.month), SD.dense = unlist(sqrt.d.month) , SD.dense.lr = unlist(lr.sqrt.d.month), MONTH = rep(month.abb,each = 97))
 sqrt.month$MONTH = factor(sqrt.month$MONTH,levels = month.abb)
@@ -103,7 +150,7 @@ ggplot() +
   
   scale_y_continuous(breaks = c(0, 2.5, 5 , 7.5, 10), limits = c(0, 9.5)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/sd sparse monthly.png"), width = 28, height = 18, units = "cm", dpi = 300)
+ggsave(paste0("weather temperature/figures/sd_sparse_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
 
 ggplot() +
   geom_line(mapping = aes(x = TIME, y = SD.dense, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
@@ -126,7 +173,12 @@ ggplot() +
   
   scale_y_continuous(breaks = c(0, 2.5, 5 , 7.5, 10), limits = c(0, 9.5)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/sd dense monthly.png"), width = 28, height = 18, units = "cm", dpi = 300)
+ggsave(paste0("weather temperature/figures/sd_dense_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
+
+
+
+
+
 
 
 
@@ -152,7 +204,7 @@ ggplot() +
   
   scale_y_continuous(breaks = c(0, 2.5, 5 , 7.5, 10), limits = c(0, 9.5)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/sd sparse monthly long run.png"), width = 28, height = 18, units = "cm", dpi = 300)
+ggsave(paste0("weather temperature/figures/sd_sparse_long_run_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
 
 ggplot() +
   geom_line(mapping = aes(x = TIME, y = SD.dense.lr, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
@@ -175,4 +227,86 @@ ggplot() +
   
   scale_y_continuous(breaks = c(0, 2.5, 5 , 7.5, 10), limits = c(0, 9.5)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))
-ggsave(paste0("Application/Data examples/",data.example[[l]],"/pictures/sd dense monthly long run.png"), width = 28, height = 18, units = "cm", dpi = 300)
+ggsave(paste0("weather temperature/figures/sd_dense_long_run_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
+
+
+
+
+
+
+
+
+
+
+#######################################################################
+#### Plot of dense and sparse mean function for each month ############
+#######################################################################
+
+
+# Loading bandwidths for mean and difference estimation
+Bandwidths = readRDS(paste0("weather temperature/bandwidth selection/Results/bw_",data.example[[k]],".rds"))
+
+# Mean and difference function estimation
+est = est.results(data.s.34h,data.d.34h,Bandwidths,from = 1,to = 12)
+
+if(k == 1){
+  
+ggplot() +
+  geom_line(aes(x = TIME, y = ESTIMATE), data =est$dense, color = "turquoise", lty = 1, size = 1.5) +
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = est$sparse, color = "darkblue", size = 1.5, lty = 2, show.legend = F) +
+  labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example[[k]]) *" (Germany): Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"})) +
+  theme(plot.title = element_text(size =16),
+        legend.text = element_text(size =10),
+        strip.text = element_text(size = 15),
+        legend.title = element_text(size = 11),
+        axis.title.x = element_text(size = 14),     
+        axis.title.y = element_text(size = 14),
+        axis.text.x  = element_text(size = 12),     
+        axis.text.y  = element_text(size = 12))+
+  ylim(-4,27)+
+  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
+  facet_wrap(~ MONTH)
+ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
+
+}else{
+  
+ggplot() +
+  geom_line(aes(x = TIME, y = ESTIMATE), data =est$dense, color = "turquoise", lty = 1, size = 1.5) +
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = est$sparse, color = "darkblue", size = 1.5, lty = 2, show.legend = F) +
+  labs(x = "Time", y = "Temperature in °C",title = bquote("Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"}*phantom(integral(delta)))) +
+  theme(plot.title = element_text(size =26),
+        legend.text = element_text(size =10),
+        strip.text = element_text(size = 22),
+        legend.title = element_text(size = 11),
+        axis.title.x = element_text(size = 20),     
+        axis.title.y = element_text(size = 20),
+        axis.text.x  = element_text(size = 17),     
+        axis.text.y  = element_text(size = 17))+
+  ylim(-4,27)+
+  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20"))+
+  facet_wrap(~ MONTH, ncol = 3, nrow = 4)
+ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), width = 16, height = 24, units = "cm", dpi = 300)
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
