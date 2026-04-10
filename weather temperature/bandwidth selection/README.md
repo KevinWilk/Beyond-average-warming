@@ -1,0 +1,22 @@
+## Overview 
+
+#### `functions.R` cotains
+
+- `k.fold.hc.cv()`: K-Fold hv-block cross validation for univariate local polynomial estimator
+- `bw_month()`:     runs `k.fold.hc.cv()` on densely (2000-2025) observed data sets and sparsly (1952-1972) observed residuals for each season with `K=5`
+-  `est.results()`: estimation of mean functions (1952-1972 and 2000-2025) and difference function on 15-minutes grid (00:00 to 24:00) for each month 
+  
+- `cov.k.fold.hc.cv()`: K-Fold hv-block cross validation for bivariate local polynomial estimator
+- `cov.bw.month()`:     runs `cov.k.fold.hc.cv()` for each season with `K=5`
+- `cov.weights()`:      calculates weights of lagged bivariate local polynomial estimator for each month 
+  
+- `test.int()`: significance test of averaged daily temperature (integral of delta) for each month
+  
+- `P.Cov()`: calculates linear projection (P) of lagged covariance matrix (_full_ or _diagonal_)
+- `q.month()`: runs `q.MB()` for each month 
+- `q.MB()`: prepares arguments (lists `ls` and `ld`,  `cov`,  `depend = TRUE/FALSE`,  `int= TRUE/FALSE`) for Multiplier Bootstrap function `MB` and runs `MB()`-function `B=1000`-times
+-  `MB()`: indendent/dependent Multiplier Bootstrap
+-  `CB()`: constructs simultaneous confidence bands for each month
+  
+#### `lagged Covariance function.R` cotains
+
