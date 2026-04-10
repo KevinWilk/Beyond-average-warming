@@ -9,3 +9,5 @@
 -  calculation of diagonal of linear projection (P) of long run covariance matrix
 -  dependent Multiplier Bootstrap on centered difference function
 -  centered difference function test with construction of 95%-confidence bands
+
+  -> saved in _Results_
