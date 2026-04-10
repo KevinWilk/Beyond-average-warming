@@ -66,54 +66,11 @@ est.results = function(data.sparse,data.dense,bandwidth,from = 1,to = 12){
 
 
 
-########################################################################################################################
-################ Lagged kernel: Calculating weights ####################################################################
-########################################################################################################################
 
 
-
-cov.weights = function(data.sparse,data.dense,bandwidth.s,bandwidth.d,from = 1, to = 12, p.eval , eval.type = "full", deg = 1, max.lag = 10){
-  
-  pd = dim(data.dense)[2] - 3
-  p = dim(data.sparse)[2] - 3
-  
-  for(m in from:to){
-    
-    file.s = paste0("weather temperature/kernel weights/",eval.type,"_w_s_lag0.rds")
-    file.d = paste0("weather temperature/kernel weights/",eval.type,"_w_d_lag0_",sprintf("%03d", bandwidth.d[1,m] * 100),".rds")
-    
-    w  = local.polynomial.weights(p,  bandwidth.s[1,m], p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "less", eval.type = eval.type, parallel.environment = F)
-    wd = local.polynomial.weights(pd, bandwidth.d[1,m], p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "less", eval.type = eval.type, parallel.environment = F)    
-    saveRDS(w, file = file.s)
-    saveRDS(wd, file = file.d)
-    rm(w); gc()
-    rm(wd); gc()
-    
-    for(k in 1:max.lag){
-      
-     file.s = paste0("weather temperature/kernel weights/",eval.type,"_w_s_lag",k,".rds")
-     file.d = paste0("weather temperature/kernel weights/",eval.type,"_w_d_lag",k,"_",sprintf("%03d", bandwidth.d[1,m] * 100),".rds")
-    
-     bw.lag   = round(bandwidth.s[1,m]*1.1^k, digits = 2)
-     bw.d.lag = round(bandwidth.d[1,m]*1.1^k, digits = 2)
-      
-      w.lag   = lag.local.polynomial.weights(p, bw.lag, p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "lesseq", eval.type = eval.type, parallel.environment = F)
-      wd.lag  = lag.local.polynomial.weights(pd,bw.d.lag, p.eval = p.eval, parallel = T, m = deg, del = 0, grid.type = "lesseq", eval.type = eval.type, parallel.environment = F)
-      saveRDS(w.lag, file = file.s)
-      saveRDS(wd.lag, file = file.d)
-      
-      print(paste0("done: lag ", k))
-      
-      rm(w.lag); gc()
-      rm(wd.lag); gc()
-    } 
-    print(paste0("done: ", month.name[m]))
-  }
-}  
-
-
-
-### Integral delta Test
+############################
+### Integral delta Test ####
+############################
 
 test.int = function(data.sparse, data.dense, int.est, var.s, var.d, from = 1, to = 12, test = "two-sided", alpha = 0.9){
   
