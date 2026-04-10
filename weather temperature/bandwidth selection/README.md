@@ -7,12 +7,11 @@
 - `cov.k.fold.hc.cv()`: K-Fold hv-block cross validation for bivariate local polynomial estimator
 - `cov.bw.month()`:     runs `cov.k.fold.hc.cv()` for each season with `K=5`
 
-#### `bandwidth_selection.R`
 
+#### `bandwidth_selection.R`
 ##### for mean/difference function
 -  `Bandwidths`: via hv-crossvalidation in a K-fold framework for each season (K = length of time period)
 -> saved as  `bw_city.rds` in _Results_ 
-
 ##### for covariance kernel (lag 0)
 -  `cov.Bandwidths`: via hv-crossvalidation in a K-fold framework for each season (K = length of time period)
 -> saved as  `bw_Gamma_s_city.rds` (sparse set) or `bw_Gamma_d_city.rds` (dense set) in _Results_ 
