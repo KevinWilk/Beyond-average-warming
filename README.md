@@ -1,5 +1,3 @@
-# Beyond the positive drift
-
 This repository contains all numerical results and code implementations associated with the paper:
 
 # Beyond the positive drift: Comparing historical and current daily temperature patterns based on two sample statistics for unbalanced dense-sparse functional data
