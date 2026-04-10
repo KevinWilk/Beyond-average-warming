@@ -482,6 +482,256 @@ ggsave("Simulation/Figures/Comparison_CB.png", width = 30, height = 14, units = 
 
 
 
+##########################################################################
+##########################################################################
+####                                     #################################
+####  Illustation of coverage and power  #################################
+####                                     #################################
+##########################################################################
+##########################################################################
+
+
+# Parameters
+N   = c(15,25,50,75,100,150,200,250,300,350,400)
+P   = c(25,50,75)
+Rep = 1000
+
+
+#############
+# Under H0 ##
+#############
+
+dep.value.c = c()
+ind.value.c = c()
+
+for(i in 1:length(P)){
+  
+  dep.coverage.90  = c()
+  dep.coverage.95  = c()
+  dep.coverage.99  = c()
+  
+  ind.coverage.90  = c()
+  ind.coverage.95  = c()
+  ind.coverage.99  = c()
+  
+  for(j in 2:11){
+    
+    dep.c90 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
+    dep.c95 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
+    dep.c99 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    
+    dep.coverage.90  = c(dep.coverage.90,dep.c90)
+    dep.coverage.95  = c(dep.coverage.95,dep.c95)
+    dep.coverage.99  = c(dep.coverage.99,dep.c99)
+    
+    
+    ind.c90 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_coverage90.rds"))
+    ind.c95 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_coverage95.rds"))
+    ind.c99 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    
+    ind.coverage.90  = c(ind.coverage.90,ind.c90)
+    ind.coverage.95  = c(ind.coverage.95,ind.c95)
+    ind.coverage.99  = c(ind.coverage.99,ind.c99)
+    
+  }
+  
+  dep.value.c = c(dep.value.c,dep.coverage.90,dep.coverage.95,dep.coverage.99)
+  
+  ind.value.c = c(ind.value.c,ind.coverage.90,ind.coverage.95,ind.coverage.99)
+  
+}
+
+dep.coverage.df    = data.frame(p = rep(paste0("p = ", P), each = length(N[-1])*3) ,n = rep(N[-1], times = length(P)*3), quantile.est = rep(c("90%","95%","99%"), each = length(N[-1])), emp.coverage = dep.value.c, type = "i = DMB")
+dep.endpoints      = dep.coverage.df |> group_by(p,quantile.est) |> filter(emp.coverage == max(emp.coverage))
+ind.coverage.df    = data.frame(p = rep(paste0("p = ", P), each = length(N[-1])*3) ,n = rep(N[-1], times = length(P)*3), quantile.est = rep(c("90%","95%","99%"), each = length(N[-1])), emp.coverage = ind.value.c, type = "i = IMB")
+coverage.df        = rbind(dep.coverage.df,ind.coverage.df)
+
+ggplot() + 
+  geom_line( aes(x = n, y = emp.coverage, colour = quantile.est, linetype = type), data = coverage.df, size = 1.6) +
+  geom_text(data = dep.endpoints, aes(x = 400, y = emp.coverage, label = paste0(round(emp.coverage*100, digits = 1),"%"), colour = quantile.est), hjust = -0.15, size = 6, show.legend = FALSE) +
+  
+  scale_colour_manual(name = expression(1-alpha),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
+  
+  theme(plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 25),
+        legend.text = element_text(size = 25),
+        strip.text = element_text(size = 25),
+        plot.margin = margin(5.5, 27, 5.5, 5.5),     
+        legend.box.margin = margin(0, 3, 0, 0),     
+        legend.title = element_text(size = 25),
+        axis.title.x = element_text(size = 25),     
+        axis.title.y = element_text(size = 25),
+        axis.text.x  = element_text(size = 25),     
+        axis.text.y  = element_text(size = 25),
+        
+        legend.key.width  = unit(1.1, "cm")) +
+  labs(linetype = expression("with "*{hat(q)^{i}}[1-alpha])) +
+  scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1), limits = c(0,1)) +
+  xlim(25,475) +
+  labs(y = "empirical coverage", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100")) +
+  facet_grid(~factor(p))
+
+ggsave("Simulation/Figures/coverage rate H0.png", width = 38, height = 16, units = "cm", dpi = 300)
+
+
+
+
+
+
+
+
+
+
+
+
+#############
+# Under H1 ##
+#############
+
+dep.value.c = c()
+dep.value.p = c()
+
+ind.value.c = c()
+ind.value.p = c()
+
+for(i in 1:length(P[1])){
+  
+  dep.coverage.90  = c()
+  dep.coverage.95  = c()
+  dep.coverage.99  = c()
+  
+  dep.power.90  = c()
+  dep.power.95  = c()
+  dep.power.99  = c()
+  
+  ind.coverage.90  = c()
+  ind.coverage.95  = c()
+  ind.coverage.99  = c()
+  
+  ind.power.90  = c()
+  ind.power.95  = c()
+  ind.power.99  = c()
+  
+  for(j in 2:11){
+    
+    dep.c90 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
+    dep.c95 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
+    dep.c99 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    
+    dep.coverage.90  = c(dep.coverage.90,dep.c90)
+    dep.coverage.95  = c(dep.coverage.95,dep.c95)
+    dep.coverage.99  = c(dep.coverage.99,dep.c99)
+    
+    
+    
+    ind.c90 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_coverage90.rds"))
+    ind.c95 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_coverage95.rds"))
+    ind.c99 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    
+    ind.coverage.90  = c(ind.coverage.90,ind.c90)
+    ind.coverage.95  = c(ind.coverage.95,ind.c95)
+    ind.coverage.99  = c(ind.coverage.99,ind.c99)
+    
+    
+    
+    
+    
+    dep.p90 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power90.rds"))
+    dep.p95 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power95.rds"))
+    dep.p99 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power99.rds"))
+    
+    dep.power.90  = c(dep.power.90,dep.p90)
+    dep.power.95  = c(dep.power.95,dep.p95)
+    dep.power.99  = c(dep.power.99,dep.p99)
+    
+    
+    
+    ind.p90 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_power90.rds"))
+    ind.p95 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_power95.rds"))
+    ind.p99 = readRDS(paste0("Simulation/Coverage and power/Under H1/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_power99.rds"))
+    
+    ind.power.90  = c(ind.power.90,ind.p90)
+    ind.power.95  = c(ind.power.95,ind.p95)
+    ind.power.99  = c(ind.power.99,ind.p99)
+    
+  }
+  
+  dep.value.c = c(dep.value.c,dep.coverage.90,dep.coverage.95,dep.coverage.99)
+  dep.value.p = c(dep.value.p,dep.power.90,dep.power.95,dep.power.99)
+  
+  ind.value.c = c(ind.value.c,ind.coverage.90,ind.coverage.95,ind.coverage.99)
+  ind.value.p = c(ind.value.p,ind.power.90,ind.power.95,ind.power.99)
+}
+
+dep.perform.df  = data.frame(p = rep(P[1], each = length(N[-1])*1) ,
+                             n = rep(N[-1], times = length(P[1])), 
+                             quantile.est = rep(c("90%","95%","99%"), each = length(N[-1])), 
+                             emp.coverage = dep.value.c, power = dep.value.p,
+                             type = "i = DMB")
+ind.perform.df  = data.frame(p = rep(P[1], each = length(N[-1])*1) ,
+                             n = rep(N[-1], times = length(P[1])), 
+                             quantile.est = rep(c("90%","95%","99%"), each = length(N[-1])), 
+                             emp.coverage = ind.value.c, power = ind.value.p,
+                             type = "i = IMB")
+perform.df    = rbind(dep.perform.df, ind.perform.df)
+dep.endpoints = dep.perform.df |> group_by(quantile.est, p) |> filter(n == max(n))
+
+ggplot() + 
+  geom_line( aes(x = n, y = emp.coverage, colour = quantile.est, linetype = type), data = perform.df , size = 1.8) +
+  geom_text(data = dep.endpoints, aes(x = n, y = emp.coverage, label = paste0(round(emp.coverage*100,digits = 1),"%"), colour = quantile.est), hjust = -0.2, size = 6, show.legend = FALSE) +
+  
+  scale_colour_manual(name = expression("with "*{hat(q)^{i}}[1-alpha]),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
+  
+  labs(linetype = "p") +
+  theme(plot.title = element_text(size = 20),
+        plot.subtitle = element_text(size = 20),
+        legend.text = element_text(size = 21),
+        plot.margin = margin(5.5, 27, 5.5, 5.5),     
+        legend.box.margin = margin(0, 3, 0, 0),     
+        legend.title = element_text(size = 20),
+        axis.title.x = element_text(size = 20),     
+        axis.title.y = element_text(size = 20),
+        axis.text.x  = element_text(size = 20),     
+        axis.text.y  = element_text(size = 19))+
+  labs(colour = NULL, linetype = NULL) +
+  theme(legend.key = element_rect(fill = "white", colour = NA),
+        legend.text  = element_blank(),
+        legend.title = element_blank()) +
+  guides(colour = guide_legend(override.aes = list(colour = NA)),
+         linetype = guide_legend(override.aes = list(linetype = 0))) +
+  xlim(25,450) +
+  scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1), limits = c(0,1)) +
+  labs(y = "empirical coverage", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100"))
+
+ggsave("Simulation/Figures/coverage rate H1.png", width = 21, height = 13, units = "cm", dpi = 300)
+
+
+
+ggplot() + 
+  geom_line(aes(x = n, y = power, colour = quantile.est, linetype = type), data = perform.df, size = 1.8) +
+  
+  scale_colour_manual(name = expression(1-alpha),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
+  
+  theme(plot.title = element_text(size = 20),
+        plot.subtitle = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        plot.margin = margin(5.5, 27, 5.5, 5.5),     
+        legend.box.margin = margin(0, 3, 0, 0),     
+        legend.title = element_text(size = 20),
+        axis.title.x = element_text(size = 20),     
+        axis.title.y = element_text(size = 20),
+        axis.text.x  = element_text(size = 20),     
+        axis.text.y  = element_text(size = 19),
+        
+        legend.key.width  = unit(1.1, "cm")) +
+  
+  labs(linetype = expression("with "*{hat(q)^{i}}[1-alpha])) +
+  
+  scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1), limits = c(0,1)) +
+  xlim(25,400) +
+  labs(y = "empirical power", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100"))
+
+ggsave("Simulation/Figures/power H1.png", width = 21, height = 13, units = "cm", dpi = 300)
 
 
 
