@@ -333,13 +333,13 @@ saveRDS(ind_q99_list,file_dep)
 # Saving empirical quantile of test statistic from 1000 samples
 
 q_emp      = quantile(sort(emp_sample),probs = 0.9, Type = 2, na.rm = T)
-file_emp   = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/",N[j],"_rep_",Repitition,"_emp90.rds")
+file_emp   = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/sim_",N[j],"_rep_",Repitition,"_emp90.rds")
 saveRDS(q_emp,file_emp)
 q_emp      = quantile(sort(emp_sample),probs = 0.95, Type = 2, na.rm = T)
-file_emp   = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/",N[j],"_rep_",Repitition,"_emp95.rds")
+file_emp   = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/sim_",N[j],"_rep_",Repitition,"_emp95.rds")
 saveRDS(q_emp,file_emp)
 q_emp      = quantile(sort(emp_sample),probs = 0.99, Type = 2, na.rm = T)
-file_emp   = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/",N[j],"_rep_",Repitition,"_emp99.rds")
+file_emp   = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/sim_",N[j],"_rep_",Repitition,"_emp99.rds")
 saveRDS(q_emp,file_emp)
 
 
