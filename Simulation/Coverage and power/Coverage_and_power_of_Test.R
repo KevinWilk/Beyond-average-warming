@@ -184,7 +184,7 @@ for(rep in 1:Repitition){
   estimation = est.results(Y.s,Y.d,bandwidth[c(2,i*2+2),j], p.eval = p.eval)  
   
   
-  delta.centered     = delta((1:p.eval-0.5)/p.eval, constant = delta_constant)-integrate(function(x){delta(x,constant = delta_constant)},0,1)$value 
+  delta.centered     = delta((1:p.eval-0.5)/p.eval, constant = delta_constant) - integrate(function(x){delta(x,constant = delta_constant)},0,1)$value 
   delta.centered.est = estimation$delta$ESTIMATE - estimation$delta_int$ESTIMATE
   
   
@@ -248,12 +248,11 @@ for(rep in 1:Repitition){
   
   if(rep %% 10 == 0){print(rep)}
   
-  emp_sample = c(emp_sample,sqrt(N[j])*max(abs(delta.centered.est/sqrt(P.Gamma))))
+  emp_sample = c(emp_sample,sqrt(N[j])*max(abs((delta.centered.est - delta.centered)/sqrt(P.Gamma))))
   
 }
 
 plan(sequential)
-
 
 
 
