@@ -263,33 +263,33 @@ plan(sequential)
 
 # Dependent Multiplier Bootstrap
 
-file_coverage = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_coverage90.rds")
+file_coverage = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_coverage90.rds")
 coverage      = (Repitition-dep.m90)/Repitition
 saveRDS(coverage,file_coverage)
-file_coverage = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_coverage95.rds")
+file_coverage = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_coverage95.rds")
 coverage      = (Repitition-dep.m95)/Repitition
 saveRDS(coverage,file_coverage)
-file_coverage = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_coverage99.rds")
+file_coverage = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_coverage99.rds")
 coverage      = (Repitition-dep.m99)/Repitition
 saveRDS(coverage,file_coverage)
 
 if(!delta_constant){
-  file_power = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_power90.rds")
+  file_power = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_power90.rds")
   power      = dep.power90/Repitition
   saveRDS(power,file_power)
-  file_power = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_power95.rds")
+  file_power = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_power95.rds")
   power      = dep.power95/Repitition
   saveRDS(power,file_power)
-  file_power = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_power99.rds")
+  file_power = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_power99.rds")
   power      = dep.power99/Repitition
   saveRDS(power,file_power)
 }
 
-file_dep = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_q90_list.rds")
+file_dep = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_q90_list.rds")
 saveRDS(dep_q90_list,file_dep)
-file_dep = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_q95_list.rds")
+file_dep = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_q95_list.rds")
 saveRDS(dep_q95_list,file_dep)
-file_dep = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_q99_list.rds")
+file_dep = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_q99_list.rds")
 saveRDS(dep_q99_list,file_dep)
 
 
@@ -297,33 +297,33 @@ saveRDS(dep_q99_list,file_dep)
 
 # Independent Multiplier Bootstrap
 
-file_coverage = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_coverage90.rds")
+file_coverage = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_coverage90.rds")
 coverage      = (Repitition-ind.m90)/Repitition
 saveRDS(coverage,file_coverage)
-file_coverage = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_coverage95.rds")
+file_coverage = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_coverage95.rds")
 coverage      = (Repitition-ind.m95)/Repitition
 saveRDS(coverage,file_coverage)
-file_coverage = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_coverage99.rds")
+file_coverage = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_coverage99.rds")
 coverage      = (Repitition-ind.m99)/Repitition
 saveRDS(coverage,file_coverage)
 
 if(!delta_constant){
-  file_power = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_power90.rds")
+  file_power = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_power90.rds")
   power      = ind.power90/Repitition
   saveRDS(power,file_power)
-  file_power = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_power95.rds")
+  file_power = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_power95.rds")
   power      = ind.power95/Repitition
   saveRDS(power,file_power)
-  file_power = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_power99.rds")
+  file_power = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_power99.rds")
   power      = ind.power99/Repitition
   saveRDS(power,file_power)
 }
 
-file_dep = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_q90_list.rds")
+file_dep = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_q90_list.rds")
 saveRDS(ind_q90_list,file_dep)
-file_dep = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_q95_list.rds")
+file_dep = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_q95_list.rds")
 saveRDS(ind_q95_list,file_dep)
-file_dep = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_q99_list.rds")
+file_dep = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Repitition,"_q99_list.rds")
 saveRDS(ind_q99_list,file_dep)
 
 
@@ -333,13 +333,13 @@ saveRDS(ind_q99_list,file_dep)
 # Saving empirical quantile of test statistic from 1000 samples
 
 q_emp      = quantile(sort(emp_sample),probs = 0.9, Type = 2, na.rm = T)
-file_emp   = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/sim_",N[j],"_rep_",Repitition,"_emp90.rds")
+file_emp   = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/sim_",N[j],"_rep_",Repitition,"_emp90.rds")
 saveRDS(q_emp,file_emp)
 q_emp      = quantile(sort(emp_sample),probs = 0.95, Type = 2, na.rm = T)
-file_emp   = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/sim_",N[j],"_rep_",Repitition,"_emp95.rds")
+file_emp   = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/sim_",N[j],"_rep_",Repitition,"_emp95.rds")
 saveRDS(q_emp,file_emp)
 q_emp      = quantile(sort(emp_sample),probs = 0.99, Type = 2, na.rm = T)
-file_emp   = paste0("Simulation/coverage and power/",folder,"/p ",P[i],"/sim_",N[j],"_rep_",Repitition,"_emp99.rds")
+file_emp   = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/sim_",N[j],"_rep_",Repitition,"_emp99.rds")
 saveRDS(q_emp,file_emp)
 
 
