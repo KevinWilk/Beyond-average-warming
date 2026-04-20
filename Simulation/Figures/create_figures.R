@@ -698,7 +698,7 @@ ggplot() +
   labs(linetype = expression("with "*{hat(q)^{i}}[1-alpha])) +
   scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1), limits = c(0,1)) +
   xlim(25,475) +
-  labs(y = "empirical coverage", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100")) +
+  labs(y = "power", x = "n", title = "") +
   facet_grid(~factor(p))
 
 
