@@ -30,7 +30,7 @@ est.results = function(data.sparse,data.dense,bandwidth,p.eval){
   int_delta_hat           = integrate(function(x)locPolSmootherC(x = (1:p-0.5)/p, y = res,xeval = x ,bw = bw.delta,deg = 2, EpaK)$beta0,lower = 0,upper =  1, stop.on.error = FALSE)$value 
   
   int.delta.eval$ESTIMATE = rep(int_delta_hat, times = length(eval.tibble))
-
+  
   return(list(delta = L.delta.eval, dense = L.dense.eval, sparse = L.sparse.eval, delta_int = int.delta.eval)) 
 }
 
@@ -54,11 +54,13 @@ q.MB = function(Ys, Yd, Ys.est,  Yd.est, cov, x.eval, bandwidth, alpha = 0.9, B 
   
   if(int == T){
     
-    grid.s  = (0:(dim(Ys)[2]-1))/(dim(Ys)[2]-1)
-    grid.d  = (0:(dim(Yd)[2]-1))/(dim(Yd)[2]-1)
+    integral.d = integrate(function(x)locPolSmootherC(x = grid.d, y = colMeans(Yd), xeval = x ,bw = bandwidth[1],deg = 2, kernel = EpaK)$beta0,lower = 0,upper =  1, stop.on.error = FALSE)$value
     
-    ls = modifyList(ls, list(int.s = integrate(function(x)locPolSmootherC(x = grid.s, y = colMeans(Ys), xeval = x ,bw = bandwidth[2],deg = 2, kernel = EpaK)$beta0,lower = 0,upper =  1, stop.on.error = FALSE)$value ))
-    ld = modifyList(ld, list(int.d = integrate(function(x)locPolSmootherC(x = grid.d, y = colMeans(Yd), xeval = x ,bw = bandwidth[1],deg = 2, kernel = EpaK)$beta0,lower = 0,upper =  1, stop.on.error = FALSE)$value ))
+    res        = colMeans(Ys) - locPolSmootherC(x = grid.d, y = colMeans(Yd), xeval = grid.s, bw = bandwidth[1],deg = 2, EpaK)$beta0
+    integral   = integral.d   + integrate(function(x)locPolSmootherC(x = grid.s, y = res, xeval = x ,bw = bandwidth[2],deg = 2, kernel = EpaK)$beta0,lower = 0,upper =  1, stop.on.error = FALSE)$value
+    
+    ls = modifyList(ls, list(int.s = integral))
+    ld = modifyList(ld, list(int.d = integral.d))
     
     
     ls = modifyList(ls, list(bw.s = bandwidth[2]))    
@@ -129,8 +131,8 @@ MB = function(list1, list2, cov, dependent = F, int = F){
     g_n  = rnorm(n)
     g_nd = rnorm(nd)}
   
-  if(int == T){f1_int = sapply(1:n,  function(i){mean(locPolSmootherC((1:p-0.5)/p,   sample[, i], seq(0, 1, length.out = 1000), max(h,0.09), 2, EpaK)$beta0)})
-  f2_int = sapply(1:nd, function(i){mean(locPolSmootherC((1:pd-0.5)/pd, sample_d[, i], seq(0, 1, length.out = 1000), h_d, 2, EpaK)$beta0)})}
+  if(int == T){ f1_int = sapply(1:n,  function(i){mean(locPolSmootherC((1:p-0.5)/p,   sample[, i],   seq(0, 1, length.out = 1000), h,   2, EpaK)$beta0)})
+                f2_int = sapply(1:nd, function(i){mean(locPolSmootherC((1:pd-0.5)/pd, sample_d[, i], seq(0, 1, length.out = 1000), h_d, 2, EpaK)$beta0)})}
   
   if(int == F){return(max(abs((1/sqrt(n-1)*( (weights %*% sample - T_val1) - int1)) %*% g_n  -
                                 (n/(nd*sqrt(n-1))*( (weights %*% drop(weights_d %*% sample_d) - T_val2) - int2)) %*% g_nd)/sqrt(cov))) }
