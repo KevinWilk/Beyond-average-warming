@@ -49,14 +49,20 @@ Repitition = 1000  # Number of data simulation repetitions
 ##########################################
                           ################
 delta_constant = TRUE     ################
+integral       = FALSE    ################
                           ################
 ##########################################
 ##########################################
-if(delta_constant){       ################
-  folder = "Under H0"     ################
-}else{                    ################
-  folder = "Under H1"     ################
-}                         ################
+if(delta_constant){                  #####
+  if(integral){                      #####
+    folder = "Under H0"              #####
+  }else{folder = "H0 not centered"}  #####
+    ######################################
+}else{                               #####
+  if(integral){                      #####
+    folder = "Under H1"              #####
+  }else{folder = "H1 not centered"}  #####
+}                                    #####
 ##########################################
 
 
@@ -177,6 +183,7 @@ for(rep in 1:Repitition){
   P.Gamma = P.Gamma.s     + N[j]/Nd[j]* P.Gamma.d     # 
   #####################################################
   
+  kernel.diag = if(integral){ P.Gamma }else{ Gamma }
   
   
   # Mean and Difference Estimation #
@@ -184,34 +191,41 @@ for(rep in 1:Repitition){
   estimation = est.results(Y.s,Y.d,bandwidth[c(2,i*2+2),j], p.eval = p.eval)  
   
   
-  delta.centered     = delta((1:p.eval-0.5)/p.eval, constant = delta_constant) - integrate(function(x){delta(x,constant = delta_constant)},0,1)$value 
-  delta.centered.est = estimation$delta$ESTIMATE - estimation$delta_int$ESTIMATE
+  true.val = if(integral){ 
+    delta((1:p.eval-0.5)/p.eval, constant = delta_constant) - integrate(function(x){delta(x,constant = delta_constant)},0,1)$value
+  }else{ 
+    delta((1:p.eval-0.5)/p.eval, constant = delta_constant)} 
+  
+  obs.est  = if(integral){ 
+    estimation$delta$ESTIMATE - estimation$delta_int$ESTIMATE 
+  }else{ 
+    estimation$delta$ESTIMATE }
   
   
   ##################################
   # Dependent Multiplier Bootstrap #
   ##################################
   
-  dep.sim = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, P.Gamma, (1:p.eval)/p.eval, bandwidth[c(2,i*2+2),j], B = B, depend = T, int = T, H0 = 0) 
+  dep.sim = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, kernel.diag, (1:p.eval)/p.eval, bandwidth[c(2,i*2+2),j], B = B, depend = T, int = integral, H0 = 0) 
 
   
   dep.q90 = quantile(dep.sim$sample, probs = 0.9,  Type = 2, na.rm = T)
   dep.q95 = quantile(dep.sim$sample, probs = 0.95, Type = 2, na.rm = T)
   dep.q99 = quantile(dep.sim$sample, probs = 0.99, Type = 2, na.rm = T)
   
-  q90_list = c(dep_q90_list,dep.q90)
-  q95_list = c(dep_q95_list,dep.q95)
-  q99_list = c(dep_q99_list,dep.q99)
-
+  dep_q90_list = c(dep_q90_list,dep.q90)
+  dep_q95_list = c(dep_q95_list,dep.q95)
+  dep_q99_list = c(dep_q99_list,dep.q99)
   
-  if( any(abs(delta.centered.est - delta.centered) > sqrt(P.Gamma/(N[j]))*dep.q90) ){dep.m90 = dep.m90+1}
-  if( any(abs(delta.centered.est - delta.centered) > sqrt(P.Gamma/(N[j]))*dep.q95) ){dep.m95 = dep.m95+1}
-  if( any(abs(delta.centered.est - delta.centered) > sqrt(P.Gamma/(N[j]))*dep.q99) ){dep.m99 = dep.m99+1}
+  
+  if( any(abs(obs.est - true.val) > sqrt(kernel.diag/(N[j]))*dep.q90) ){dep.m90 = dep.m90+1}
+  if( any(abs(obs.est - true.val) > sqrt(kernel.diag/(N[j]))*dep.q95) ){dep.m95 = dep.m95+1}
+  if( any(abs(obs.est - true.val) > sqrt(kernel.diag/(N[j]))*dep.q99) ){dep.m99 = dep.m99+1}
   
   if(!delta_constant){
-    if( any(abs(delta.centered.est - 0) > sqrt(P.Gamma/(N[j]))*dep.q90) ){dep.power90 = dep.power90+1}
-    if( any(abs(delta.centered.est - 0) > sqrt(P.Gamma/(N[j]))*dep.q95) ){dep.power95 = dep.power95+1}
-    if( any(abs(delta.centered.est - 0) > sqrt(P.Gamma/(N[j]))*dep.q99) ){dep.power99 = dep.power99+1}
+    if( any(abs(obs.est - 0) > sqrt(kernel.diag/(N[j]))*dep.q90) ){dep.power90 = dep.power90+1}
+    if( any(abs(obs.est - 0) > sqrt(kernel.diag/(N[j]))*dep.q95) ){dep.power95 = dep.power95+1}
+    if( any(abs(obs.est - 0) > sqrt(kernel.diag/(N[j]))*dep.q99) ){dep.power99 = dep.power99+1}
   }
   
   
@@ -221,34 +235,34 @@ for(rep in 1:Repitition){
   # Independent Multiplier Bootstrap #
   ####################################
   
-  ind.sim = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, P.Gamma, (1:p.eval)/p.eval, bandwidth[c(2,i*2+2),j], B = B, depend = F, int = T, H0 = 0)
+  #ind.sim = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, kernel.diag, (1:p.eval)/p.eval, bandwidth[c(2,i*2+2),j], B = B, depend = F, int = integral, H0 = 0)
   
   
-  ind.q90 = quantile(ind.sim$sample, probs = 0.9,  Type = 2, na.rm = T)
-  ind.q95 = quantile(ind.sim$sample, probs = 0.95, Type = 2, na.rm = T)
-  ind.q99 = quantile(ind.sim$sample, probs = 0.99, Type = 2, na.rm = T)
+  #ind.q90 = quantile(ind.sim$sample, probs = 0.9,  Type = 2, na.rm = T)
+  #ind.q95 = quantile(ind.sim$sample, probs = 0.95, Type = 2, na.rm = T)
+  #ind.q99 = quantile(ind.sim$sample, probs = 0.99, Type = 2, na.rm = T)
   
-  q90_list = c(ind_q90_list,ind.q90)
-  q95_list = c(ind_q95_list,ind.q95)
-  q99_list = c(ind_q99_list,ind.q99)
+  #ind_q90_list = c(ind_q90_list,ind.q90)
+  #ind_q95_list = c(ind_q95_list,ind.q95)
+  #ind_q99_list = c(ind_q99_list,ind.q99)
   
   
-  if( any(abs(delta.centered.est - delta.centered) > sqrt(P.Gamma/(N[j]))*ind.q90) ){ind.m90 = ind.m90+1}
-  if( any(abs(delta.centered.est - delta.centered) > sqrt(P.Gamma/(N[j]))*ind.q95) ){ind.m95 = ind.m95+1}
-  if( any(abs(delta.centered.est - delta.centered) > sqrt(P.Gamma/(N[j]))*ind.q99) ){ind.m99 = ind.m99+1}
+  #if( any(abs(obs.est - true.val) > sqrt(kernel.diag/(N[j]))*ind.q90) ){ind.m90 = ind.m90+1}
+  #if( any(abs(obs.est - true.val) > sqrt(kernel.diag/(N[j]))*ind.q95) ){ind.m95 = ind.m95+1}
+  #if( any(abs(obs.est - true.val) > sqrt(kernel.diag/(N[j]))*ind.q99) ){ind.m99 = ind.m99+1}
   
-  if(!delta_constant){
-    if( any(abs(delta.centered.est - 0) > sqrt(P.Gamma/(N[j]))*ind.q90) ){ind.power90 = ind.power90+1}
-    if( any(abs(delta.centered.est - 0) > sqrt(P.Gamma/(N[j]))*ind.q95) ){ind.power95 = ind.power95+1}
-    if( any(abs(delta.centered.est - 0) > sqrt(P.Gamma/(N[j]))*ind.q99) ){ind.power99 = ind.power99+1}
-  }
+  #if(!delta_constant){
+  #  if( any(abs(obs.est - 0) > sqrt(kernel.diag/(N[j]))*ind.q90) ){ind.power90 = ind.power90+1}
+  #  if( any(abs(obs.est - 0) > sqrt(kernel.diag/(N[j]))*ind.q95) ){ind.power95 = ind.power95+1}
+  #  if( any(abs(obs.est - 0) > sqrt(kernel.diag/(N[j]))*ind.q99) ){ind.power99 = ind.power99+1}
+  #}
   
   
   
   
   if(rep %% 10 == 0){print(rep)}
   
-  emp_sample = c(emp_sample,sqrt(N[j])*max(abs((delta.centered.est - delta.centered)/sqrt(P.Gamma))))
+  emp_sample = c(emp_sample,sqrt(N[j])*max(abs((obs.est - true.val)/sqrt(kernel.diag))))
   
 }
 
