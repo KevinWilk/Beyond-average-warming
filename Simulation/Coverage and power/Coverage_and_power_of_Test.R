@@ -47,17 +47,17 @@ Repitition = 1000  # Number of data simulation repetitions
 # - FALSE: delta not constant    #########
 ##########################################
 ##########################################
-                          ################
-delta_constant = TRUE     ################
-integral       = FALSE    ################
-                          ################
+################
+delta_constant = TRUE    ################
+integral       = TRUE     ################
+################
 ##########################################
 ##########################################
 if(delta_constant){                  #####
   if(integral){                      #####
     folder = "Under H0"              #####
   }else{folder = "H0 not centered"}  #####
-    ######################################
+  ######################################
 }else{                               #####
   if(integral){                      #####
     folder = "Under H1"              #####
@@ -120,17 +120,17 @@ plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
 for(rep in 1:Repitition){
   
   
-  
+
   #Gernate data sets
   x.s.design = (1:P[i] - 0.5)/P[i]
   Y.s       = t(mu(x.s.design) + 
                   t(sim.d.OU(N[j], t = x.s.design, rho_B = 0.5,tau = 0,sigma = 4)) + 
-                    matrix(rnorm(length(x.s.design)*N[j], 0, 0.1),length(x.s.design), N[j]))
+                  matrix(rnorm(length(x.s.design)*N[j], 0, 0.1),length(x.s.design), N[j]))
   
   xd.design = (1:pd - 0.5)/pd
   Y.d       = t(mu_d(xd.design,delta_constant) + 
                   t(sim.d.OU(Nd[j], t = xd.design, rho_B = 0.5,tau = 0,sigma = 4)) + 
-                    matrix(rnorm(length(xd.design)*Nd[j], 0, 0.1),length(xd.design), Nd[j]))
+                  matrix(rnorm(length(xd.design)*Nd[j], 0, 0.1),length(xd.design), Nd[j]))
   
   
   
@@ -206,7 +206,7 @@ for(rep in 1:Repitition){
   # Dependent Multiplier Bootstrap #
   ##################################
   
-  dep.sim = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, kernel.diag, (1:p.eval)/p.eval, bandwidth[c(2,i*2+2),j], B = B, depend = T, int = integral, H0 = 0) 
+  dep.sim = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, kernel.diag, (1:p.eval)/p.eval, bandwidth[c(2,i*2+2),j], B = 10, depend = T, int = integral, H0 = 0) 
 
   
   dep.q90 = quantile(dep.sim$sample, probs = 0.9,  Type = 2, na.rm = T)
