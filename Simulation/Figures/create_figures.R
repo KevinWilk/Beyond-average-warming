@@ -564,6 +564,19 @@ dep.endpoints      = dep.coverage.df |> group_by(p,quantile.est) |> filter(emp.c
 ind.coverage.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3) ,n = rep(N, times = length(P)*3), quantile.est = rep(c("90%","95%","99%"), each = length(N)), emp.coverage = ind.value.c, type = "i = IMB")
 coverage.df        = rbind(dep.coverage.df,ind.coverage.df)
 
+##########################################
+if(delta_constant){                  #####
+  if(integral){                      #####
+    folder = "H0 centered"           #####
+  }else{folder = "H0 not centered"}  #####
+  ########################################
+}else{                               #####
+  if(integral){                      #####
+    folder = "H1 centered"           #####
+  }else{folder = "H1 not centered"}  #####
+}                                    #####
+##########################################
+
 
 ggplot() + 
   geom_line( aes(x = n, y = emp.coverage, colour = quantile.est, linetype = type), data = dep.coverage.df, size = 1.6) +
@@ -590,22 +603,7 @@ ggplot() +
   labs(y = "empirical coverage", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100")) +
   facet_grid(~factor(p))
 
-##########################################
-if(delta_constant){                  #####
-  if(integral){                      #####
-    folder = "H0 centered"           #####
-  }else{folder = "H0 not centered"}  #####
-  ########################################
-}else{                               #####
-  if(integral){                      #####
-    folder = "H1 centered"           #####
-  }else{folder = "H1 not centered"}  #####
-}                                    #####
-##########################################
-
 ggsave(paste0("Simulation/Figures/coverage rate ",folder,".png"), width = 39, height = 16, units = "cm", dpi = 300)
-
-
 
 
 
@@ -620,6 +618,9 @@ ggsave(paste0("Simulation/Figures/coverage rate ",folder,".png"), width = 39, he
 # Under H1: power ##
 ####################
 
+# Parameters
+N   = c(25,50,75,100,150,200,250,300,350,400)
+
 dep.value.p = c()
 ind.value.p = c()
 
@@ -633,7 +634,7 @@ for(i in 1:length(P)){
   ind.power.95  = c()
   ind.power.99  = c()
   
-  for(j in 1:9){
+  for(j in 1:10){
     
     dep.p90 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power90.rds"))
     dep.p95 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power95.rds"))
@@ -660,12 +661,21 @@ for(i in 1:length(P)){
   
 }
 
-
-
 dep.power.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3) ,n = rep(N, times = length(P)*3), quantile.est = rep(c("90%","95%","99%"), each = length(N)), emp.power = dep.value.p, type = "i = DMB")
 
 
-
+##########################################
+if(delta_constant){                  #####
+  if(integral){                      #####
+    folder = "H0 centered"           #####
+  }else{folder = "H0 not centered"}  #####
+  ########################################
+}else{                               #####
+  if(integral){                      #####
+    folder = "H1 centered"           #####
+  }else{folder = "H1 not centered"}  #####
+}                                    #####
+##########################################
 
 ggplot() + 
   geom_line( aes(x = n, y = emp.power, colour = quantile.est, linetype = type), data = dep.power.df, size = 1.6) +
@@ -691,18 +701,6 @@ ggplot() +
   labs(y = "empirical coverage", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100")) +
   facet_grid(~factor(p))
 
-##########################################
-if(delta_constant){                  #####
-  if(integral){                      #####
-    folder = "H0 centered"           #####
-  }else{folder = "H0 not centered"}  #####
-  ########################################
-}else{                               #####
-  if(integral){                      #####
-    folder = "H1 centered"           #####
-  }else{folder = "H1 not centered"}  #####
-}                                    #####
-##########################################
 
 ggsave(paste0("Simulation/Figures/power ",folder,".png"), width = 39, height = 16, units = "cm", dpi = 300)
 
