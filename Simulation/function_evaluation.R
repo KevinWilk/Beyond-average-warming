@@ -36,7 +36,7 @@ est.results = function(data.sparse,data.dense,bandwidth,p.eval){
 
 
 
-q.MB = function(Ys, Yd, Ys.est,  Yd.est, cov, x.eval, bandwidth, alpha = 0.9, B = 1000, depend = F, int = F, H0 = 0){
+q.MB = function(Ys, Yd, Ys.est,  Yd.est, cov, x.eval, bandwidth, alpha = 0.9, B = 1000, depend = F, int = F){
   
   grid.s  = (1:dim(Ys)[2]-0.5)/dim(Ys)[2]
   grid.d  = (1:dim(Yd)[2]-0.5)/dim(Yd)[2]
@@ -48,8 +48,8 @@ q.MB = function(Ys, Yd, Ys.est,  Yd.est, cov, x.eval, bandwidth, alpha = 0.9, B 
   ld = list(sample.d = t(Yd), weight.d = w.d, sample.d.mean = unlist(colMeans(Yd)), est.d = Yd.est$ESTIMATE) 
   
   if(int == F){
-    ls = modifyList(ls, list(constant = H0))
-    ld = modifyList(ld, list(constant = H0))
+    ls = modifyList(ls, list(constant = 0))
+    ld = modifyList(ld, list(constant = 0))
   }
   
   if(int == T){
@@ -134,8 +134,8 @@ MB = function(list1, list2, cov, dependent = F, int = F){
   if(int == T){ f1_int = sapply(1:n,  function(i){mean(locPolSmootherC((1:p-0.5)/p,   sample[, i],   seq(0, 1, length.out = 1000), h,   2, EpaK)$beta0)})
                 f2_int = sapply(1:nd, function(i){mean(locPolSmootherC((1:pd-0.5)/pd, sample_d[, i], seq(0, 1, length.out = 1000), h_d, 2, EpaK)$beta0)})}
   
-  if(int == F){return(max(abs((1/sqrt(n-1)*( (weights %*% sample - T_val1) - int1)) %*% g_n  -
-                                (n/(nd*sqrt(n-1))*( (weights %*% drop(weights_d %*% sample_d) - T_val2) - int2)) %*% g_nd)/sqrt(cov))) }
+  if(int == F){return(max(abs((1/sqrt(n-1)*( weights %*% sample - T_val1 )) %*% g_n  -
+                                (n/(nd*sqrt(n-1))*( weights %*% drop(weights_d %*% sample_d) - T_val2 )) %*% g_nd)/sqrt(cov))) }
   
   else{        return(max(abs(1/sqrt(n-1)*(sweep(weights %*% sample, 2, f1_int, "-") - T_val1 + int1) %*% g_n  -
                                 (n/(nd*sqrt(n-1))*(weights %*% drop(sweep(weights_d %*% sample_d, 2, f2_int, "-")) - T_val2 + int2)) %*% g_nd)/sqrt(cov)))}
