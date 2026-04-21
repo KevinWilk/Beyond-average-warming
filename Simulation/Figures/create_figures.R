@@ -73,7 +73,7 @@ obs.s = (1:p  - 0.5)/p
 obs.d = (1:pd - 0.5)/pd
 
 
-if(delta_constant){set.seed(1144)}else{set.seed(1167)}
+if(delta_constant){set.seed(1124)}else{set.seed(1180)}
 #### target sample simulation #####################################################
 Y.s = mu(obs.s) + #################################################################
       t(sim.d.OU(n, t = obs.s,rho_B = 0.5,tau = 0,sigma = 4)) + ###################
@@ -84,7 +84,7 @@ Y.s.df = melt(data.frame(obs.s, Y.s), id.vars = "obs.s", #######################
 Y.s.mean = data.frame(obs.s, Y.s= rowMeans(Y.s))###################################
 ###################################################################################
 
-if(delta_constant){set.seed(1148)}else{set.seed(1177)}
+if(delta_constant){set.seed(1129)}else{set.seed(1181)}
 #### source sample simulation ###################################################################
 Y.d = mu_d(obs.d,delta_constant) + ##############################################################
                 t(sim.d.OU(nd, t = obs.d,rho_B = 0.5,tau = 0,sigma = 4)) + ######################
@@ -143,7 +143,7 @@ ggplot() +
         axis.title.y = element_text(size = 17),
         axis.text.x  = element_text(size = 24),     
         axis.text.y  = element_text(size = 24))+
-  ylim(-12.5,11)+
+  ylim(-10,10)+
   labs(y=NULL, x = NULL, 
        subtitle = bquote("Simulation setup of " * mu^{"[s]"} * ": n = " * .(n) * ", p = " * .(p))) 
 
@@ -163,7 +163,7 @@ ggplot() +
         axis.title.y = element_text(size = 17),
         axis.text.x  = element_text(size = 24),     
         axis.text.y  = element_text(size = 24))+
-  ylim(-12.5,11)+
+  ylim(-10,10)+
   labs(y=NULL, x = NULL, 
        subtitle = bquote("Simulation setup of " * mu^{"[d]"} * ": "*tilde(n)*" = " * .(nd) * ", "*tilde(p)*" = " * .(pd))) 
 
@@ -188,7 +188,7 @@ ggplot() +
         axis.title.y = element_text(size = 17),
         axis.text.x  = element_text(size = 24),     
         axis.text.y  = element_text(size = 24))+
-  ylim(-12,11)+
+  ylim(-10,10)+
   labs(y=NULL, x = NULL, 
        subtitle = bquote("Simulation setup of " * delta * " = " * mu^{"[s]"}-  mu^{"[d]"} )) 
 
@@ -515,12 +515,11 @@ if(delta_constant){                  #####
 
 
 
-###################
-# Under H0 or H1 ##
-###################
+####################
+# Under H0 and H1 ##
+####################
 
 dep.value.c = c()
-ind.value.c = c()
 
 for(i in 1:length(P)){
   
@@ -528,59 +527,44 @@ for(i in 1:length(P)){
   dep.coverage.95  = c()
   dep.coverage.99  = c()
   
-  ind.coverage.90  = c()
-  ind.coverage.95  = c()
-  ind.coverage.99  = c()
-  
   for(j in 1:9){
     
-    dep.c90 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
-    dep.c95 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
-    dep.c99 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    dep.c90 = readRDS(paste0("Simulation/Coverage and power/H0 not centered/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
+    dep.c95 = readRDS(paste0("Simulation/Coverage and power/H0 not centered/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
+    dep.c99 = readRDS(paste0("Simulation/Coverage and power/H0 not centered/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
     
     dep.coverage.90  = c(dep.coverage.90,dep.c90)
     dep.coverage.95  = c(dep.coverage.95,dep.c95)
     dep.coverage.99  = c(dep.coverage.99,dep.c99)
     
+  }
+  
+  
+  for(j in 1:9){
     
-    #ind.c90 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_coverage90.rds"))
-    #ind.c95 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_coverage95.rds"))
-    #ind.c99 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    dep.c90 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
+    dep.c95 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
+    dep.c99 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
     
-    #ind.coverage.90  = c(ind.coverage.90,ind.c90)
-    #ind.coverage.95  = c(ind.coverage.95,ind.c95)
-    #ind.coverage.99  = c(ind.coverage.99,ind.c99)
+    dep.coverage.90  = c(dep.coverage.90,dep.c90)
+    dep.coverage.95  = c(dep.coverage.95,dep.c95)
+    dep.coverage.99  = c(dep.coverage.99,dep.c99)
     
   }
   
   dep.value.c = c(dep.value.c,dep.coverage.90,dep.coverage.95,dep.coverage.99)
   
-  #ind.value.c = c(ind.value.c,ind.coverage.90,ind.coverage.95,ind.coverage.99)
-  
 }
 
-dep.coverage.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3) ,n = rep(N, times = length(P)*3), quantile.est = rep(c("90%","95%","99%"), each = length(N)), emp.coverage = dep.value.c, type = "i = DMB")
-dep.endpoints      = dep.coverage.df |> group_by(p,quantile.est) |> filter(emp.coverage == max(emp.coverage))
-ind.coverage.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3) ,n = rep(N, times = length(P)*3), quantile.est = rep(c("90%","95%","99%"), each = length(N)), emp.coverage = ind.value.c, type = "i = IMB")
-coverage.df        = rbind(dep.coverage.df,ind.coverage.df)
-
-##########################################
-if(delta_constant){                  #####
-  if(integral){                      #####
-    folder = "H0 centered"           #####
-  }else{folder = "H0 not centered"}  #####
-  ########################################
-}else{                               #####
-  if(integral){                      #####
-    folder = "H1 centered"           #####
-  }else{folder = "H1 not centered"}  #####
-}                                    #####
-##########################################
-
+dep.coverage.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3*2) ,n = rep(N, times = length(P)*3*2), 
+                                  quantile.est = rep(c("90%","95%","99%"), each = length(N)*2), 
+                                    emp.coverage = dep.value.c, 
+                                    type = "i = DMB", process = factor(rep(c("not centered", "centered"), each = length(N)),levels = c("not centered", "centered")) )
+dep.endpoints      = dep.coverage.df |> group_by(p,quantile.est,process) |> filter(emp.coverage == max(emp.coverage))
 
 ggplot() + 
   geom_line( aes(x = n, y = emp.coverage, colour = quantile.est, linetype = type), data = dep.coverage.df, size = 1.6) +
-  geom_text(data = dep.endpoints, aes(x = 400, y = emp.coverage, label = paste0(round(emp.coverage*100, digits = 1),"%"), colour = quantile.est), hjust = -0.15, size = 6, show.legend = FALSE) +
+  geom_text(data = dep.endpoints, aes(x = 400, y = emp.coverage, label = paste0(round(emp.coverage*100, digits = 0),"%"), colour = quantile.est), hjust = -0.15, size = 6, show.legend = FALSE) +
   
   scale_colour_manual(name = expression(1-alpha),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
   
@@ -599,11 +583,12 @@ ggplot() +
         legend.key.width  = unit(1.1, "cm")) +
   labs(linetype = expression("with "*{hat(q)^{i}}[1-alpha])) +
   scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1), limits = c(0,1)) +
-  xlim(25,475) +
+  scale_x_continuous(breaks = c(0,200,400), limits = c(0,510)) +
   labs(y = "empirical coverage", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100")) +
-  facet_grid(~factor(p))
+  facet_grid(. ~ process + p, labeller = labeller( process = as_labeller(c("not centered" = "delta[n]-delta","centered"     = "Delta[n]-Delta"), label_parsed)))
 
-ggsave(paste0("Simulation/Figures/coverage rate ",folder,".png"), width = 39, height = 16, units = "cm", dpi = 300)
+
+ggsave(paste0("Simulation/Figures/coverage rate H0.png"), width = 50, height = 18, units = "cm", dpi = 300)
 
 
 
