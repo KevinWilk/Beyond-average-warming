@@ -67,10 +67,11 @@ lag_Gamma_s_75_Bandwidth  = readRDS("Simulation/optimal bandwidth/Results/lag_Ga
 #################
 
 
-# Optional: For parallelizing computations ###############
-options(future.globals.maxSize = 20 * 1024^3)           ##  
-plan(multisession, workers = future::availableCores()-2)##
-########################################################## 
+# Optional: For parallelizing computations ####################
+options(future.globals.maxSize = 64 * 1024^3)                ##   
+plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
+#plan(multisession, workers = 60) # MaRC3a: partition=normal ##
+###############################################################
   
 for(j in 2:length(N)){
 
