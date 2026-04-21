@@ -40,7 +40,7 @@ delta_constant = TRUE     ################
 if(delta_constant){       ################
   folder = "Delta = 0"    ################
 }else{                    ################
-  folder = "Delta = 0"    ################
+  folder = "Delta != 0"   ################
 }                         ################
 ##########################################
 
@@ -67,10 +67,11 @@ colnames(bw.optim.list) = N
 
 
 
-# Optional: For parallelizing computations ###############
-options(future.globals.maxSize = 20 * 1024^3)           ##  
-plan(multisession, workers = future::availableCores()-2)##
-##########################################################
+# Optional: For parallelizing computations ####################
+options(future.globals.maxSize = 64 * 1024^3)                ##   
+plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
+#plan(multisession, workers = 60) # MaRC3a: partition=normal ##
+###############################################################
 
 for(i in 1:length(N)){
   

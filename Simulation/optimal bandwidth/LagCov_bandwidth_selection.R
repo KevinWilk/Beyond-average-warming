@@ -39,7 +39,7 @@ delta_constant = TRUE     ################
 if(delta_constant){       ################
   folder = "Delta = 0"    ################
 }else{                    ################
-  folder = "Delta = 0"    ################
+  folder = "Delta != 0"   ################
 }                         ################
 ##########################################
 
@@ -115,10 +115,11 @@ file100.optim  = paste0("Simulation/optimal bandwidth/Results/",folder,"/lag_Gam
 
 
 
-# Optional: For parallelizing computations ###################
-options(future.globals.maxSize = 64 * 1024^3)               ##  
-plan(multisession, workers = 60) # MaRC3a: partition=normal ##
-##############################################################
+# Optional: For parallelizing computations ####################
+options(future.globals.maxSize = 64 * 1024^3)                ##   
+plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
+#plan(multisession, workers = 60) # MaRC3a: partition=normal ##
+###############################################################
 
 for(i in 2:length(N)){
   
