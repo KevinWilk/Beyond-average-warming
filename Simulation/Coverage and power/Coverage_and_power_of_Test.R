@@ -206,7 +206,7 @@ for(rep in 1:Repitition){
   # Dependent Multiplier Bootstrap #
   ##################################
   
-  dep.sim = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, kernel.diag, (1:p.eval)/p.eval, bandwidth[c(2,i*2+2),j], B = 10, depend = T, int = integral) 
+  dep.sim = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, kernel.diag, (1:p.eval)/p.eval, bandwidth[c(2,i*2+2),j], B = B, depend = T, int = integral) 
 
   
   dep.q90 = quantile(dep.sim$sample, probs = 0.9,  Type = 2, na.rm = T)
