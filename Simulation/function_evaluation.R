@@ -131,7 +131,7 @@ MB = function(list1, list2, cov, dependent = F, int = F){
     g_n  = rnorm(n)
     g_nd = rnorm(nd)}
   
-  if(int == T){ f1_int = sapply(1:n,  function(i){mean(locPolSmootherC((1:p-0.5)/p,   sample[, i],   seq(0, 1, length.out = 1000), h,   2, EpaK)$beta0)})
+  if(int == T){ f1_int = sapply(1:n,  function(i){mean(locPolSmootherC((1:p-0.5)/p,   sample[, i],   seq(0, 1, length.out = 1000), h_d, 2, EpaK)$beta0)})
                 f2_int = sapply(1:nd, function(i){mean(locPolSmootherC((1:pd-0.5)/pd, sample_d[, i], seq(0, 1, length.out = 1000), h_d, 2, EpaK)$beta0)})}
   
   if(int == F){return(max(abs((1/sqrt(n-1)*( weights %*% sample - T_val1 )) %*% g_n  -

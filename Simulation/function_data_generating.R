@@ -10,7 +10,7 @@ mu = function(x){
 delta = function(x,constant = T){
   if(constant == T) return(rep(2, length(x)))
   else{ x = 2*x -1
-  return(-2*sin(pi*(x))*exp(-2*abs(x))+2)}
+  return(-sin(pi*(x))*exp(-2*abs(x))+2)}
 }
 
 mu_d = function(x,...){
