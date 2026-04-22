@@ -359,7 +359,7 @@ P.Gamma.s = diag(Gamma.s) - rowMeans(Gamma.s) - colMeans(Gamma.s) + mean(Gamma.s
 
 
 #dense 
-wd      = readRDS(paste0("Simulation/weights/pd 100 ",delta_constant,"/full_w_lag0_",n,".rds"))
+wd      = readRDS(paste0("Simulation/weights/pd 100 constant ",delta_constant,"/full_w_lag0_",n,".rds"))
 Gamma.d = eval.weights(wd,observation.transformation(Y.d,grid.type = "less"))
 
 
@@ -369,7 +369,7 @@ plan(multisession, workers = future::availableCores()-2)##
 
 Gamma.d.part2 = Reduce(`+`,future_lapply(1:3, function(k) {
   
-  wd.lag = readRDS(paste0("Simulation/weights/pd 100 ",delta_constant,"/full_w_lag",k,"_",n,".rds"))
+  wd.lag = readRDS(paste0("Simulation/weights/pd 100 constant ",delta_constant,"/full_w_lag",k,"_",n,".rds"))
   lag.Gamma.d = eval.weights(wd.lag, observation.transformation(Y.d, lag = k, grid.type = "lesseq"), lag = k)
   lag.Gamma.d = (1 - k/(3 + 1) ) * (lag.Gamma.d + t(lag.Gamma.d))
   
@@ -404,31 +404,93 @@ estimation = est.results(Y.s,Y.d,bandwidth[c(2,4),11], p.eval = p.eval)
 options(future.globals.maxSize = 20 * 1024^3)           ##  
 plan(multisession, workers = future::availableCores()-2)##
 
-dep.MB.result = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, P.Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = T, int = T, H0 = 0)
-ind.MB.result = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, P.Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = F, int = T, H0 = 0)
+dep.MB.res        = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = T, int = F)
+ind.MB.res        = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = F, int = F)
+
+dep.MB.res.center = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, P.Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = T, int = T)
+ind.MB.res.center = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, P.Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = F, int = T)
 
 plan(sequential)
 
-
-delta.centered     = delta((1:p.eval-0.5)/p.eval, 
-                           constant = delta_constant)-integrate(function(x){delta(x,constant = delta_constant)},0,1)$value 
+delta.true         = delta((1:p.eval-0.5)/p.eval, constant = delta_constant)  
+delta.est          = estimation$delta$ESTIMATE 
+delta.centered     = delta((1:p.eval-0.5)/p.eval, constant = delta_constant) - integrate(function(x){delta(x,constant = delta_constant)},0,1)$value 
 delta.centered.est = estimation$delta$ESTIMATE - estimation$delta_int$ESTIMATE
 
-delta.centered.df = data.frame(x = (1:p.eval-0.5)/p.eval, true.val = delta.centered, est.val = delta.centered.est)
+delta.res.df = data.frame(x = (1:p.eval-0.5)/p.eval, true.val = delta.true, est.val = delta.est, true.val.center = delta.centered, est.val.center = delta.centered.est)
 
 KI.dep = data.frame(x = (1:p.eval-0.5)/p.eval, 
-                    UP = delta.centered.est + sqrt(P.Gamma/(n))* dep.MB.result$quantile,
-                    LOW = delta.centered.est - sqrt(P.Gamma/(n))* dep.MB.result$quantile)
+                    UP         = delta.est + sqrt(Gamma/(n))* dep.MB.res$quantile,
+                    LOW        = delta.est - sqrt(Gamma/(n))* dep.MB.res$quantile,
+                    UP.center  = delta.centered.est + sqrt(P.Gamma/(n))* dep.MB.res.center$quantile,
+                    LOW.center = delta.centered.est - sqrt(P.Gamma/(n))* dep.MB.res.center$quantile)
 
 KI.ind = data.frame(x = (1:p.eval-0.5)/p.eval, 
-                    UP = delta.centered.est + sqrt(P.Gamma/(n))* ind.MB.result$quantile,
-                    LOW = delta.centered.est - sqrt(P.Gamma/(n))* ind.MB.result$quantile)
+                    UP         = delta.est + sqrt(P.Gamma/(n))* ind.MB.res$quantile,
+                    LOW        = delta.est - sqrt(P.Gamma/(n))* ind.MB.res$quantile,
+                    UP.center  = delta.centered.est + sqrt(P.Gamma/(n))* ind.MB.res.center$quantile,
+                    LOW.center = delta.centered.est - sqrt(P.Gamma/(n))* ind.MB.res.center$quantile)
+
+
+
+#################################
+# not centered confidence bands #
+#################################
 
 ggplot() +
   geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "dependent"),data = KI.dep, alpha = 0.2, col = NA) +
   geom_ribbon(aes(x = x, ymin = LOW, ymax = UP, fill = "independent"),data = KI.ind, col = "black", alpha = 0,size = 1.2, lty = 2)+
-  geom_line(aes(x, est.val, colour = "hat Difference"), data = delta.centered.df, lty = 2, size = 1.2) +
-  geom_line(aes(x, true.val, colour = "Difference"), data = delta.centered.df, lty = 1, size = 1) +
+  geom_line(aes(x, est.val, colour = "hat Difference"), data = delta.res.df, lty = 2, size = 1.2) +
+  geom_line(aes(x, true.val, colour = "Difference"), data = delta.res.df, lty = 1, size = 1) +
+  
+  scale_y_continuous(breaks = c(0,1.25,2.5), limits = c(-0.8,2.8)) +
+  
+  labs(subtitle = bquote("n = " * .(n) * ", p = " * .(p) *", " *tilde(n)*" = " * .(nd) * " and "*tilde(p)*" = " * .(pd)),
+       x = NULL,
+       y = NULL) +
+  
+  scale_fill_manual("Confidence bands:", 
+                    values = c("dependent" = "black", "independent" = "black"),
+                    labels = c("dependent" = expression("with "*hat(q)[0.95]^{DMB}),
+                               "independent" = expression("with "*hat(q)[0.95]^{IMB})),
+                    breaks = c("dependent","independent")) +
+  
+  scale_colour_manual("Curves:", 
+                      values = c("hat Difference" = "red","Difference" = "black"),
+                      labels = c("hat Difference" = expression(hat(delta) * phantom(integral(hat(delta), "")*" d"*lambda) ),
+                                 "Difference" = expression(delta * phantom(integral(delta, "")*" d"*lambda) ) ) ) +
+  
+  theme(plot.subtitle = element_text(size = 20),
+        legend.text = element_text(size  = 20),
+        legend.title = element_text(size = 20),
+        axis.title.x = element_text(size = 20),     
+        axis.title.y = element_text(size = 20),
+        axis.text.x  = element_text(size = 20),     
+        axis.text.y  = element_text(size = 20),
+        
+        legend.position   = "bottom",
+        legend.box        = "horizontal",
+        legend.key.height = unit(0.3, "cm"),
+        legend.key.width  = unit(1.1, "cm")) +
+  
+  guides(fill   = guide_legend(nrow = 2, byrow = TRUE),
+         colour = guide_legend(nrow = 2, byrow = TRUE))
+
+ggsave("Simulation/Figures/Compare_CB_not_centered.png", width = 20, height = 15, units = "cm", dpi = 300)
+
+
+
+#############################
+# centered confidence bands #
+#############################
+
+ggplot() +
+  geom_ribbon(aes(x = x, ymin = LOW.center, ymax = UP.center, fill = "dependent"),data = KI.dep, alpha = 0.2, col = NA) +
+  geom_ribbon(aes(x = x, ymin = LOW.center, ymax = UP.center, fill = "independent"),data = KI.ind, col = "black", alpha = 0,size = 1.2, lty = 2)+
+  geom_line(aes(x, est.val.center, colour = "hat Difference"), data = delta.res.df, lty = 2, size = 1.2) +
+  geom_line(aes(x, true.val.center, colour = "Difference"), data = delta.res.df, lty = 1, size = 1) +
+  
+  scale_y_continuous(breaks = c(0,1.25,2.5), limits = c(-0.8,2.8)) +
   
   labs(subtitle = bquote("n = " * .(n) * ", p = " * .(p) *", " *tilde(n)*" = " * .(nd) * " and "*tilde(p)*" = " * .(pd)),
        x = NULL,
@@ -445,23 +507,23 @@ ggplot() +
                       labels = c("hat Difference" = expression(hat(delta) - integral(hat(delta), "")*" d"*lambda),
                                  "Difference" = expression(delta - integral(delta, "")*" d"*lambda))) +
   
-  theme(plot.subtitle = element_text(size = 24),
-        legend.text = element_text(size  = 22),
-        legend.title = element_text(size = 22),
-        axis.title.x = element_text(size = 22),     
-        axis.title.y = element_text(size = 22),
-        axis.text.x  = element_text(size = 22),     
-        axis.text.y  = element_text(size = 22),
+  theme(plot.subtitle = element_text(size = 20),
+        legend.text = element_text(size  = 20),
+        legend.title = element_text(size = 20),
+        axis.title.x = element_text(size = 20),     
+        axis.title.y = element_text(size = 20),
+        axis.text.x  = element_text(size = 20),     
+        axis.text.y  = element_text(size = 20),
         
-        legend.position   = "right",
-        legend.box        = "vertical",
+        legend.position   = "bottom",
+        legend.box        = "horizontal",
         legend.key.height = unit(0.3, "cm"),
         legend.key.width  = unit(1.1, "cm")) +
   
   guides(fill   = guide_legend(nrow = 2, byrow = TRUE),
          colour = guide_legend(nrow = 2, byrow = TRUE))
 
-ggsave("Simulation/Figures/Comparison_CB.png", width = 30, height = 14, units = "cm", dpi = 300)
+ggsave("Simulation/Figures/Compare_CB_centered.png", width = 20, height = 15, units = "cm", dpi = 300)
 
 
 
@@ -501,15 +563,13 @@ delta_constant = FALSE
 integral       = FALSE
 
 ##########################################
-if(delta_constant){                  #####
-  if(integral){                      #####
-    folder = "Under H0"              #####
-  }else{folder = "H0 not centered"}  #####
+if(delta_constant){                  #####                                    
+    folder1 = "H0 not centered"      #####
+    folder2 = "Under H0"             #####
   ########################################
 }else{                               #####
-  if(integral){                      #####
-    folder = "Under H1"              #####
-  }else{folder = "H1 not centered"}  #####
+    folder1 = "H1 not centered"      #####
+    folder2 = "Under H1"             #####
 }                                    #####
 ##########################################
 
@@ -529,9 +589,9 @@ for(i in 1:length(P)){
   
   for(j in 1:9){
     
-    dep.c90 = readRDS(paste0("Simulation/Coverage and power/H0 not centered/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
-    dep.c95 = readRDS(paste0("Simulation/Coverage and power/H0 not centered/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
-    dep.c99 = readRDS(paste0("Simulation/Coverage and power/H0 not centered/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    dep.c90 = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
+    dep.c95 = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
+    dep.c99 = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
     
     dep.coverage.90  = c(dep.coverage.90,dep.c90)
     dep.coverage.95  = c(dep.coverage.95,dep.c95)
@@ -542,9 +602,9 @@ for(i in 1:length(P)){
   
   for(j in 1:9){
     
-    dep.c90 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
-    dep.c95 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
-    dep.c99 = readRDS(paste0("Simulation/Coverage and power/Under H0/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    dep.c90 = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
+    dep.c95 = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
+    dep.c99 = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
     
     dep.coverage.90  = c(dep.coverage.90,dep.c90)
     dep.coverage.95  = c(dep.coverage.95,dep.c95)
