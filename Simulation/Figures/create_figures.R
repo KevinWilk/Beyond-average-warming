@@ -563,13 +563,15 @@ delta_constant = FALSE
 integral       = FALSE
 
 ##########################################
-if(delta_constant){                  #####                                    
-    folder1 = "H0 not centered"      #####
-    folder2 = "Under H0"             #####
-  ########################################
+if(delta_constant){                  #####
+  if(integral){                      #####
+    folder = "H0 (centered)"         #####
+  }else{folder = "H0 (not centered)"}#####
+    ######################################
 }else{                               #####
-    folder1 = "H1 not centered"      #####
-    folder2 = "Under H1"             #####
+  if(integral){                      #####
+    folder = "H1 (centered)"         #####
+  }else{folder = "H1 (not centered)"}#####
 }                                    #####
 ##########################################
 
@@ -712,13 +714,13 @@ dep.power.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3) ,n =
 ##########################################
 if(delta_constant){                  #####
   if(integral){                      #####
-    folder = "H0 centered"           #####
-  }else{folder = "H0 not centered"}  #####
+    folder = "H0 (centered)"         #####
+  }else{folder = "H0 (not centered)"}#####
   ########################################
 }else{                               #####
   if(integral){                      #####
-    folder = "H1 centered"           #####
-  }else{folder = "H1 not centered"}  #####
+    folder = "H1 (centered)"         #####
+  }else{folder = "H1 (not centered)"}#####
 }                                    #####
 ##########################################
 
