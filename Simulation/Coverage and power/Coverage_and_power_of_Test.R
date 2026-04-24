@@ -55,13 +55,13 @@ integral       = TRUE     ################
 ##########################################
 if(delta_constant){                  #####
   if(integral){                      #####
-    folder = "Under H0"              #####
-  }else{folder = "H0 not centered"}  #####
+        folder = "H0 (centered)"     #####
+  }else{folder = "H0 (not centered)"}#####
     ######################################
 }else{                               #####
   if(integral){                      #####
-    folder = "Under H1"              #####
-  }else{folder = "H1 not centered"}  #####
+    folder = "H1 (centered)"         #####
+  }else{folder = "H1 (not centered)"}#####
 }                                    #####
 ##########################################
 
@@ -254,12 +254,12 @@ saveRDS(coverage,file_coverage)
 
 
 if(!delta_constant){
-  file_power = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_power90.rds")
-  power      = list(p90 = dep.power90/Repitition , p95 = dep.power90/Repitition, p99 = dep.power90/Repitition)
+  file_power = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_power.rds")
+  power      = list(p90 = dep.power90/Repitition , p95 = dep.power95/Repitition, p99 = dep.power99/Repitition)
   saveRDS(power,file_power)
 }
 
-file_dep = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_q90_list.rds")
+file_dep = paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Repitition,"_q_list.rds")
 dep_q_list = list(q90list = dep_q90_list, q95list = dep_q95_list, q99list = dep_q99_list)
 saveRDS(dep_q_list,file_dep)
 
@@ -271,7 +271,7 @@ saveRDS(sort(emp_sample),file_emp)
 
 
 
-rm(list = ls())
+
 
 
 
