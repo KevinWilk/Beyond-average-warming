@@ -39,7 +39,7 @@ sim.d.OU = function(n,t = seq(0, 1, len = 201),theta = 1, sigma = 1, rho = 0 ,ta
   Sigma = toeplitz(rho_B^d)
   L = t(chol(Sigma))  
   
-  X = matrix(NA_real_, nrow = n, ncol = m)
+  X = matrix(NA, nrow = n, ncol = m)
   X[, 1] = rnorm(n, mean = mu, sd = sigma / sqrt(2 * theta))
   
   for (k in 2:m) {
@@ -50,7 +50,6 @@ sim.d.OU = function(n,t = seq(0, 1, len = 201),theta = 1, sigma = 1, rho = 0 ,ta
     X[, k] = mu + (X[, k - 1] - mu) * phi + sd_incr * Z_cor
   }
   
-  colnames(X) = sprintf("%.3f", t)
   return(X)
 }
 
