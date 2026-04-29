@@ -254,20 +254,22 @@ if(k == 1){
   
 ggplot() +
   geom_line(aes(x = TIME, y = ESTIMATE), data =est$dense, color = "turquoise", lty = 1, size = 1.5) +
-  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = est$sparse, color = "darkblue", size = 1.5, lty = 2, show.legend = F) +
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = est$sparse, color = "darkblue", size = 1.2, lty = 2, show.legend = F) +
   labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"})) +
-  theme(plot.title = element_text(size =16),
+    
+  theme(plot.title = element_text(size =17),
         legend.text = element_text(size =10),
-        strip.text = element_text(size = 15),
+        strip.text = element_text(size = 16),
         legend.title = element_text(size = 11),
         axis.title.x = element_text(size = 14),     
-        axis.title.y = element_text(size = 14),
+        axis.title.y = element_text(size = 15),
         axis.text.x  = element_text(size = 12),     
-        axis.text.y  = element_text(size = 12))+
+        axis.text.y  = element_text(size = 12)) +
+    
   ylim(-4,27)+
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
-  facet_wrap(~ MONTH)
-ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
+  facet_wrap(~ MONTH, ncol = 6, nrow = 2)
+ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), width = 30, height = 14, units = "cm", dpi = 300)
 
 }else{
   
@@ -275,12 +277,14 @@ ggplot() +
   geom_line(aes(x = TIME, y = ESTIMATE), data =est$dense, color = "turquoise", lty = 1, size = 1.5) +
   geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = est$sparse, color = "darkblue", size = 1.2, lty = 2, show.legend = F) +
   labs(x = "Time", y = "Temperature in °C",title = bquote("Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"}*phantom(integral(delta)))) +
+    
   theme(plot.title = element_text(size = 22),
         strip.text = element_text(size = 20),
         axis.title.x = element_text(size = 20),     
         axis.title.y = element_text(size = 20),
         axis.text.x  = element_text(size = 17),     
-        axis.text.y  = element_text(size = 17))+
+        axis.text.y  = element_text(size = 17)) +
+    
   ylim(-4,27)+
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20"))+
   facet_wrap(~ MONTH, ncol = 12, nrow = 1)
@@ -308,19 +312,21 @@ ggplot() +
   geom_line(aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data =est$delta_int, lty = 2, size = 1.8, alpha = 1, show.legend = T) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf, fill = "grey6", col = NA, alpha = 0.2,size = 0.5)+
   geom_line(mapping = aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data = est$delta, size = 1.8, show.legend = F) +
-  scale_color_gradient2(mid = "darkblue", high = "red", midpoint = -1, oob = scales::squish, limits = c(-1, 3), name = "°C")+
-  theme(plot.title = element_text(size =16),
-        legend.text = element_text(size =14),
-        legend.title = element_text(size =14),
-        strip.text = element_text(size = 15),
-        axis.title.x = element_text(size = 14),     
-        axis.title.y = element_text(size = 14),
-        axis.text.x  = element_text(size = 12),     
-        axis.text.y  = element_text(size = 12))+
-  scale_y_continuous(breaks = c(-1,0,1,2,3,4,5), limits = c(-1.7, 5.9)) +
+  scale_color_gradient2(mid = "darkblue", high = "red", midpoint = -1, oob = scales::squish, limits = c(-1, 3), name = "°C") +
+    
+    theme(plot.title = element_text(size   = 15),
+          legend.text = element_text(size  = 12),
+          strip.text = element_text(size   = 14),
+          legend.title = element_text(size = 13),
+          axis.title.x = element_text(size = 13),     
+          axis.title.y = element_text(size = 14),
+          axis.text.x  = element_text(size = 11),     
+          axis.text.y  = element_text(size = 11)) +
+    
+  scale_y_continuous(breaks = c(-1.5,0.,1.5,3,4.5), limits = c(-1.7, 5.9)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
-  facet_wrap(~ MONTH)
-ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
+  facet_wrap(~ MONTH, ncol = 6, nrow = 2)
+ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 30, height = 14, units = "cm", dpi = 300)
 
 }else{
 
@@ -330,13 +336,15 @@ ggplot() +
   geom_line(aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data =est$delta_int, lty = 2, size = 1.8, alpha = 1, show.legend = F) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf, fill = "grey6", col = NA, alpha = 0.2,size = 0.5)+
   geom_line(mapping = aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data = est$delta, size = 1.8, show.legend = F) +
-  scale_color_gradient2(mid = "darkblue", high = "red", midpoint = -1, oob = scales::squish, limits = c(-1, 3), name = "°C")+
-    theme(plot.title = element_text(size = 22),
-          strip.text = element_text(size = 20),
+  scale_color_gradient2(mid = "darkblue", high = "red", midpoint = -1, oob = scales::squish, limits = c(-1, 3), name = "°C") +
+    
+    theme(plot.title = element_text(  size = 22),
+          strip.text = element_text(  size = 20),
           axis.title.x = element_text(size = 20),     
           axis.title.y = element_text(size = 20),
           axis.text.x  = element_text(size = 17),     
           axis.text.y  = element_text(size = 17)) +
+    
   scale_y_continuous(breaks = c(0,2.5,5), limits = c(-1.7, 5.9)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20"))+
   facet_wrap(~ MONTH, ncol = 12, nrow = 1)
@@ -394,19 +402,19 @@ ggplot() +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf.compare, fill  = "grey6",  col = NA, alpha = 0.2,size = 0.5, lty = 2)+
   geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "red", size = 0.8, show.legend = F, linetype = 2) +
   
-  theme(plot.title = element_text(size =16),
-        legend.text = element_text(size =10),
-        strip.text = element_text(size = 15),
-        legend.title = element_text(size = 11),
-        axis.title.x = element_text(size = 14),     
-        axis.title.y = element_text(size = 14),
-        axis.text.x  = element_text(size = 12),     
-        axis.text.y  = element_text(size = 12)) +
+    theme(plot.title = element_text(size =17),
+          legend.text = element_text(size =10),
+          strip.text = element_text(size = 16),
+          legend.title = element_text(size = 11),
+          axis.title.x = element_text(size = 14),     
+          axis.title.y = element_text(size = 15),
+          axis.text.x  = element_text(size = 12),     
+          axis.text.y  = element_text(size = 12)) +
   
   ylim(-3.6, 4)+
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
-  facet_wrap(~ MONTH)
-ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k]],".png"), width = 28, height = 18, units = "cm", dpi = 300)
+  facet_wrap(~ MONTH, ncol = 6, nrow = 2)
+ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k]],".png"), width = 30, height = 14, units = "cm", dpi = 300)
 
 }else{
 
