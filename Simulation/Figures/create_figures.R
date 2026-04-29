@@ -426,8 +426,8 @@ KI.dep = data.frame(x = (1:p.eval-0.5)/p.eval,
                     LOW.center = delta.centered.est - sqrt(P.Gamma/(n))* dep.MB.res.center$quantile)
 
 KI.ind = data.frame(x = (1:p.eval-0.5)/p.eval, 
-                    UP         = delta.est + sqrt(P.Gamma/(n))* ind.MB.res$quantile,
-                    LOW        = delta.est - sqrt(P.Gamma/(n))* ind.MB.res$quantile,
+                    UP         = delta.est + sqrt(Gamma/(n))* ind.MB.res$quantile,
+                    LOW        = delta.est - sqrt(Gamma/(n))* ind.MB.res$quantile,
                     UP.center  = delta.centered.est + sqrt(P.Gamma/(n))* ind.MB.res.center$quantile,
                     LOW.center = delta.centered.est - sqrt(P.Gamma/(n))* ind.MB.res.center$quantile)
 
@@ -476,7 +476,7 @@ ggplot() +
   guides(fill   = guide_legend(nrow = 2, byrow = TRUE),
          colour = guide_legend(nrow = 2, byrow = TRUE))
 
-ggsave("Simulation/Figures/Compare_CB_not_centered.png", width = 20, height = 15, units = "cm", dpi = 300)
+ggsave("Simulation/Figures/Compare_CB_not_centered.png", width = 20, height = 17, units = "cm", dpi = 300)
 
 
 
@@ -523,7 +523,7 @@ ggplot() +
   guides(fill   = guide_legend(nrow = 2, byrow = TRUE),
          colour = guide_legend(nrow = 2, byrow = TRUE))
 
-ggsave("Simulation/Figures/Compare_CB_centered.png", width = 20, height = 15, units = "cm", dpi = 300)
+ggsave("Simulation/Figures/Compare_CB_centered.png", width = 20, height = 17, units = "cm", dpi = 300)
 
 
 
@@ -560,18 +560,15 @@ Rep = 1000
 
 
 delta_constant = FALSE
-integral       = FALSE
 
 ##########################################
 if(delta_constant){                  #####
-  if(integral){                      #####
-    folder = "H0 (centered)"         #####
-  }else{folder = "H0 (not centered)"}#####
+    folder1 = "H0 (not centered)"    #####
+    folder2 = "H0 (centered)"        #####
     ######################################
 }else{                               #####
-  if(integral){                      #####
-    folder = "H1 (centered)"         #####
-  }else{folder = "H1 (not centered)"}#####
+  folder1 = "H1 (not centered)"      #####
+  folder2 = "H1 (centered)"          #####
 }                                    #####
 ##########################################
 
@@ -591,9 +588,11 @@ for(i in 1:length(P)){
   
   for(j in 1:9){
     
-    dep.c90 = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
-    dep.c95 = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
-    dep.c99 = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    dep.c = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage_list.rds"))
+    
+    dep.c90 = dep.c$q90
+    dep.c95 = dep.c$q95
+    dep.c99 = dep.c$q99
     
     dep.coverage.90  = c(dep.coverage.90,dep.c90)
     dep.coverage.95  = c(dep.coverage.95,dep.c95)
@@ -604,9 +603,11 @@ for(i in 1:length(P)){
   
   for(j in 1:9){
     
-    dep.c90 = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage90.rds"))
-    dep.c95 = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage95.rds"))
-    dep.c99 = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage99.rds"))
+    dep.c = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage_list.rds"))
+    
+    dep.c90 = dep.c$q90
+    dep.c95 = dep.c$q95
+    dep.c99 = dep.c$q99
     
     dep.coverage.90  = c(dep.coverage.90,dep.c90)
     dep.coverage.95  = c(dep.coverage.95,dep.c95)
@@ -669,60 +670,48 @@ ggsave(paste0("Simulation/Figures/coverage rate H0.png"), width = 50, height = 1
 N   = c(25,50,75,100,150,200,250,300,350,400)
 
 dep.value.p = c()
-ind.value.p = c()
 
-for(i in 1:length(P)){
+for(i in 1:length(P[1])){
   
   dep.power.90  = c()
   dep.power.95  = c()
   dep.power.99  = c()
   
-  ind.power.90  = c()
-  ind.power.95  = c()
-  ind.power.99  = c()
   
   for(j in 1:10){
     
-    dep.p90 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power90.rds"))
-    dep.p95 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power95.rds"))
-    dep.p99 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power99.rds"))
+    dep.p = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power.rds"))
+    
+    dep.p90 = dep.p$p90
+    dep.p95 = dep.p$p95
+    dep.p99 = dep.p$p99
     
     dep.power.90  = c(dep.power.90,dep.p90)
     dep.power.95  = c(dep.power.95,dep.p95)
     dep.power.99  = c(dep.power.99,dep.p99)
     
+  }
+  
+  for(j in 1:10){
     
-    #ind.p90 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_power90.rds"))
-    #ind.p95 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_power95.rds"))
-    #ind.p99 = readRDS(paste0("Simulation/Coverage and power/",folder,"/p ",P[i],"/ind_",N[j],"_rep_",Rep,"_power99.rds"))
+    dep.p = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power.rds"))
     
-    #ind.power.90  = c(ind.power.90,ind.p90)
-    #ind.power.95  = c(ind.power.95,ind.p95)
-    #ind.power.99  = c(ind.power.99,ind.p99)
+    dep.p90 = dep.p$p90
+    dep.p95 = dep.p$p95
+    dep.p99 = dep.p$p99
+    
+    dep.power.90  = c(dep.power.90,dep.p90)
+    dep.power.95  = c(dep.power.95,dep.p95)
+    dep.power.99  = c(dep.power.99,dep.p99)
     
   }
   
   dep.value.p = c(dep.value.p,dep.power.90,dep.power.95,dep.power.99)
-  
-  #ind.value.p = c(ind.value.p,ind.power.90,ind.power.95,ind.power.99)
-  
+
 }
 
 dep.power.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3) ,n = rep(N, times = length(P)*3), quantile.est = rep(c("90%","95%","99%"), each = length(N)), emp.power = dep.value.p, type = "i = DMB")
 
-
-##########################################
-if(delta_constant){                  #####
-  if(integral){                      #####
-    folder = "H0 (centered)"         #####
-  }else{folder = "H0 (not centered)"}#####
-  ########################################
-}else{                               #####
-  if(integral){                      #####
-    folder = "H1 (centered)"         #####
-  }else{folder = "H1 (not centered)"}#####
-}                                    #####
-##########################################
 
 ggplot() + 
   geom_line( aes(x = n, y = emp.power, colour = quantile.est, linetype = type), data = dep.power.df, size = 1.6) +
