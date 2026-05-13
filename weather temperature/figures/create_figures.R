@@ -323,7 +323,7 @@ ggplot() +
           axis.text.x  = element_text(size = 11),     
           axis.text.y  = element_text(size = 11)) +
     
-  scale_y_continuous(breaks = c(-1.5,0.,1.5,3,4.5), limits = c(-1.7, 5.9)) +
+  scale_y_continuous(breaks = c(-1.5,0.,1.5,3,4.5), limits = c(-1.7, 6)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
   facet_wrap(~ MONTH, ncol = 6, nrow = 2)
 ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 30, height = 14, units = "cm", dpi = 300)
@@ -345,7 +345,7 @@ ggplot() +
           axis.text.x  = element_text(size = 17),     
           axis.text.y  = element_text(size = 17)) +
     
-  scale_y_continuous(breaks = c(0,2.5,5), limits = c(-1.7, 5.9)) +
+  scale_y_continuous(breaks = c(0,2.5,5), limits = c(-1.7, 6)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20"))+
   facet_wrap(~ MONTH, ncol = 12, nrow = 1)
 ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 46, height = 10, units = "cm", dpi = 300)
@@ -411,7 +411,7 @@ ggplot() +
           axis.text.x  = element_text(size = 12),     
           axis.text.y  = element_text(size = 12)) +
   
-  ylim(-3.6, 4)+
+  ylim(-3.6, 4.1)+
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
   facet_wrap(~ MONTH, ncol = 6, nrow = 2)
 ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k]],".png"), width = 30, height = 14, units = "cm", dpi = 300)
@@ -431,7 +431,7 @@ ggplot() +
           axis.text.x  = element_text(size = 17),     
           axis.text.y  = element_text(size = 17)) +
   
-  scale_y_continuous(breaks = c(-3,0,3), limits = c(-3.6, 4)) +
+  scale_y_continuous(breaks = c(-3,0,3), limits = c(-3.6, 4.1)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20"))+
   facet_wrap(~ MONTH, ncol = 12, nrow = 1)
 ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k]],".png"), width = 46, height = 10, units = "cm", dpi = 300)
