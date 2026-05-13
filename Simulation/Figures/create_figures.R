@@ -554,7 +554,7 @@ ggsave("Simulation/Figures/Compare_CB_centered.png", width = 20, height = 17, un
 
 
 # Parameters
-N   = c(25,50,100,150,200,250,300,350,400)
+N   = c(25,50,75,100,150,200,250,300,350,400)
 P   = c(25,50,75)
 Rep = 1000
 
@@ -563,10 +563,12 @@ delta_constant = FALSE
 
 ##########################################
 if(delta_constant){                  #####
+    name    = "H0"                   #####
     folder1 = "H0 (not centered)"    #####
     folder2 = "H0 (centered)"        #####
     ######################################
 }else{                               #####
+  name    = "H1"                     #####
   folder1 = "H1 (not centered)"      #####
   folder2 = "H1 (centered)"          #####
 }                                    #####
@@ -586,7 +588,7 @@ for(i in 1:length(P)){
   dep.coverage.95  = c()
   dep.coverage.99  = c()
   
-  for(j in 1:9){
+  for(j in 1:10){
     
     dep.c = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage_list.rds"))
     
@@ -601,7 +603,7 @@ for(i in 1:length(P)){
   }
   
   
-  for(j in 1:9){
+  for(j in 1:10){
     
     dep.c = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage_list.rds"))
     
@@ -619,10 +621,15 @@ for(i in 1:length(P)){
   
 }
 
-dep.coverage.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3*2) ,n = rep(N, times = length(P)*3*2), 
-                                  quantile.est = rep(c("90%","95%","99%"), each = length(N)*2), 
-                                    emp.coverage = dep.value.c, 
-                                    type = "i = DMB", process = factor(rep(c("not centered", "centered"), each = length(N)),levels = c("not centered", "centered")) )
+
+
+dep.coverage.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3*2) ,
+                                n = rep(N, times = length(P)*3*2), 
+                                quantile.est = rep(c("90%","95%","99%"), each = length(N)*2), 
+                                emp.coverage = dep.value.c, 
+                                type = "i = DMB", 
+                                process = factor(rep(c("not centered", "centered"), each = length(N)),levels = c("not centered", "centered")) )
+
 dep.endpoints      = dep.coverage.df |> group_by(p,quantile.est,process) |> filter(emp.coverage == max(emp.coverage))
 
 ggplot() + 
@@ -651,7 +658,7 @@ ggplot() +
   facet_grid(. ~ process + p, labeller = labeller( process = as_labeller(c("not centered" = "delta[n]-delta","centered"     = "Delta[n]-Delta"), label_parsed)))
 
 
-ggsave(paste0("Simulation/Figures/coverage rate H0.png"), width = 50, height = 18, units = "cm", dpi = 300)
+ggsave(paste0("Simulation/Figures/coverage rate ",name,".png"), width = 50, height = 18, units = "cm", dpi = 300)
 
 
 
@@ -666,19 +673,29 @@ ggsave(paste0("Simulation/Figures/coverage rate H0.png"), width = 50, height = 1
 # Under H1: power ##
 ####################
 
+
+##########################################
+                                     #####
+  name    = "H1"                     #####
+  folder1 = "H1 (not centered)"      #####
+  folder2 = "H1 (centered)"          #####
+##########################################
+
+
+
 # Parameters
-N   = c(25,50,75,100,150,200,250,300,350,400)
+N   = c(25,75,100,150,200,250,300,350,400)
 
 dep.value.p = c()
 
-for(i in 1:length(P[1])){
+for(i in 1:length(P)){
   
   dep.power.90  = c()
   dep.power.95  = c()
   dep.power.99  = c()
   
   
-  for(j in 1:10){
+  for(j in 1:9){
     
     dep.p = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power.rds"))
     
@@ -692,7 +709,7 @@ for(i in 1:length(P[1])){
     
   }
   
-  for(j in 1:10){
+  for(j in 1:9){
     
     dep.p = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power.rds"))
     
@@ -710,7 +727,12 @@ for(i in 1:length(P[1])){
 
 }
 
-dep.power.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3) ,n = rep(N, times = length(P)*3), quantile.est = rep(c("90%","95%","99%"), each = length(N)), emp.power = dep.value.p, type = "i = DMB")
+
+dep.power.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3*2) ,
+                             n = rep(N, times = length(P)*3*2), 
+                             quantile.est = rep(c("90%","95%","99%"), each = length(N)*2), 
+                             emp.power = dep.value.p, type = "i = DMB",
+                             process = factor(rep(c("not centered", "centered"), each = length(N)),levels = c("not centered", "centered")))
 
 
 ggplot() + 
@@ -733,12 +755,13 @@ ggplot() +
         legend.key.width  = unit(1.1, "cm")) +
   labs(linetype = expression("with "*{hat(q)^{i}}[1-alpha])) +
   scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1), limits = c(0,1)) +
-  xlim(25,475) +
-  labs(y = "power", x = "n", title = "") +
-  facet_grid(~factor(p))
+  scale_x_continuous(breaks = c(0,200,400), limits = c(0,510)) +
+  labs(y = "empirical power", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100")) +
+  facet_grid(. ~ process + p, labeller = labeller( process = as_labeller(c("not centered" = "delta[n]-delta","centered"     = "Delta[n]-Delta"), label_parsed)))
 
 
-ggsave(paste0("Simulation/Figures/power ",folder,".png"), width = 39, height = 16, units = "cm", dpi = 300)
+
+ggsave(paste0("Simulation/Figures/power ",name,".png"), width = 50, height = 18, units = "cm", dpi = 300)
 
 
 
