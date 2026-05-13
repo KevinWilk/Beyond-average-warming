@@ -163,9 +163,13 @@ q.MB = function(Ys, Yd, Ys.est,  Yd.est, cov, x.eval, bandwidth, alpha = 0.9, B 
     grid.s  = (0:(dim(Ys)[2]-1))/(dim(Ys)[2]-1)
     grid.d  = (0:(dim(Yd)[2]-1))/(dim(Yd)[2]-1)
     
-    ls = modifyList(ls, list(int.s = integrate(function(x)locPolSmootherC(x = grid.s, y = colMeans(Ys), xeval = x ,bw = bandwidth[2],deg = 2, kernel = EpaK)$beta0,lower = x.eval[1],upper =  x.eval[length(x.eval)])$value/(x.eval[length(x.eval)]-x.eval[1])))
-    ld = modifyList(ld, list(int.d = integrate(function(x)locPolSmootherC(x = grid.d, y = colMeans(Yd), xeval = x ,bw = bandwidth[1],deg = 2, kernel = EpaK)$beta0,lower = x.eval[1],upper =  x.eval[length(x.eval)])$value/(x.eval[length(x.eval)]-x.eval[1])))
+    integral.d = integrate(function(x)locPolSmootherC(x = grid.d, y = colMeans(Yd), xeval = x ,bw = bandwidth[1],deg = 2, kernel = EpaK)$beta0,lower = x.eval[1],upper = x.eval[length(x.eval)])$value/(x.eval[length(x.eval)]-x.eval[1])
     
+    res        = colMeans(Ys) - locPolSmootherC(x = grid.d, y = colMeans(Yd), xeval = grid.s, bw = bandwidth[1],deg = 2, EpaK)$beta0
+    integral   = integral.d   + integrate(function(x)locPolSmootherC(x = grid.s, y = res, xeval = x ,bw = bandwidth[2],deg = 2, kernel = EpaK)$beta0,lower = x.eval[1],upper =  x.eval[length(x.eval)])$value/(x.eval[length(x.eval)]-x.eval[1])
+    
+    ls = modifyList(ls, list(int.s = integral))
+    ld = modifyList(ld, list(int.d = integral.d))
     
     ls = modifyList(ls, list(bw.s = bandwidth[2]))    
     ld = modifyList(ld, list(bw.d = bandwidth[1]))   
