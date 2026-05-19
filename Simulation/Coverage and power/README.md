@@ -9,13 +9,14 @@
   
 #### `Run_simluation.R`
 - runs ‘Coverage_and_power_of_Test.R’ for different parameters
-  
-#### `Run_simulation_60.sh`
-- runs `Run_simluation.R` with 60 cores (MaRC3a, parallelization)
-#### Run_simulation_120.sh
-- runs `Run_simluation.R` with 120 cores (MaRC3a, parallelization)
-  
-##### Under H0: p = 25, p = 50, p = 75
-- saved results of empirical quantile of 1000 repititions (`n_rep_1000_emp(1-alpha).rds`), empirical coverage rate (`dep/ind_n_rep_1000_emp(1-alpha).rds`), list of 1000 estimated quantiles (`dep/ind_n_rep_1000_q(1-alpha)_list.rds`)
-##### Under H1: only for p = 25
-- saved results of empirical quantile of 1000 repititions (`n_rep_1000_emp(1-alpha).rds`), empirical coverage rate (`dep/ind_n_rep_1000_emp(1-alpha).rds`), empirical power (`dep/ind_n_rep_1000_power(1-alpha).rds`), list of 1000 estimated quantiles (`dep/ind_n_rep_1000_q(1-alpha)_list.rds`)
+
+   
+##### Under H0: p = 25, p = 50, p = 75 
+- applied dependent Multiplier Bootstrap (`N* = 1000`) to estimate 90%-, 95%- and 99%-quantiles and saved as list of 1000 estimated quantiles (`dep_n_rep_1000_q_list.rds`)
+- saved results of empirical quantiles of 1000 repititions (`n_rep_1000_emp.rds`) as list
+- saved empirical coverage rates (`dep_n_rep_1000_coverage_list.rds`) as list
+##### Under H1: p = 25, p = 50, p = 75
+- applied dependent Multiplier Bootstrap (`N* = 1000`) to estimate 90%-, 95%- and 99%-quantiles and saved as list of 1000 estimated quantiles (`dep_n_rep_1000_q_list.rds`)
+- saved results of empirical quantiles of 1000 repititions (`n_rep_1000_emp.rds`) as list
+- saved empirical coverage rates (`dep_n_rep_1000_coverage_list.rds`) as list
+- saved empirical power (`dep_n_rep_1000_power.rds`) as list
