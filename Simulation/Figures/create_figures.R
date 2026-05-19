@@ -559,7 +559,7 @@ P   = c(25,50,75)
 Rep = 1000
 
 
-delta_constant = FALSE
+delta_constant = TRUE
 
 ##########################################
 if(delta_constant){                  #####
@@ -663,28 +663,21 @@ ggsave(paste0("Simulation/Figures/coverage rate ",name,".png"), width = 50, heig
 
 
 
-
-
-
-
-
-
 ####################
 # Under H1: power ##
 ####################
 
 
-##########################################
-                                     #####
-  name    = "H1"                     #####
-  folder1 = "H1 (not centered)"      #####
-  folder2 = "H1 (centered)"          #####
-##########################################
+########################################
+name    = "H1"                     #####
+folder1 = "H1 (not centered)"      #####
+folder2 = "H1 (centered)"          #####
+########################################
 
 
 
 # Parameters
-N   = c(25,75,100,150,200,250,300,350,400)
+N   = c(25,50,75,100,150,200,250,300,350,400)
 
 dep.value.p = c()
 
@@ -695,7 +688,7 @@ for(i in 1:length(P)){
   dep.power.99  = c()
   
   
-  for(j in 1:9){
+  for(j in 1:10){
     
     dep.p = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power.rds"))
     
@@ -708,6 +701,29 @@ for(i in 1:length(P)){
     dep.power.99  = c(dep.power.99,dep.p99)
     
   }
+  
+  dep.value.p = c(dep.value.p,dep.power.90,dep.power.95,dep.power.99)
+
+}
+
+dep.power.df.part1    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3) ,
+                             n = rep(N, times = length(P)*3), 
+                             quantile.est = rep(c("90%","95%","99%"), each = length(N)), 
+                             emp.power = dep.value.p, type = "i = DMB",
+                             process = factor(rep(c("not centered"), each = length(N)),levels = c("not centered", "centered")))
+
+
+
+N   = c(25,75,100,150,200,250,300,350,400)
+
+dep.value.p = c()
+
+for(i in 1:length(P)){
+  
+  dep.power.90  = c()
+  dep.power.95  = c()
+  dep.power.99  = c()
+  
   
   for(j in 1:9){
     
@@ -724,20 +740,25 @@ for(i in 1:length(P)){
   }
   
   dep.value.p = c(dep.value.p,dep.power.90,dep.power.95,dep.power.99)
-
+  
 }
 
 
-dep.power.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3*2) ,
-                             n = rep(N, times = length(P)*3*2), 
-                             quantile.est = rep(c("90%","95%","99%"), each = length(N)*2), 
-                             emp.power = dep.value.p, type = "i = DMB",
-                             process = factor(rep(c("not centered", "centered"), each = length(N)),levels = c("not centered", "centered")))
+dep.power.df.part2    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3) ,
+                                   n = rep(N, times = length(P)*3), 
+                                   quantile.est = rep(c("90%","95%","99%"), each = length(N)), 
+                                   emp.power = dep.value.p, type = "i = DMB",
+                                   process = factor(rep(c("centered"), each = length(N)),levels = c("not centered", "centered")))
 
+dep.endpoints      = dep.power.df.part2 |> group_by(p,quantile.est,process) |> filter(emp.power == max(emp.power)) 
+dep.endpoints      = cbind(dep.endpoints, position = c(0.97, 0.91, 0.79, 0.97, 0.91, 0.75, 0.97, 0.91, 0.76))
+
+dep.power.df       = rbind(dep.power.df.part1,dep.power.df.part2)
 
 ggplot() + 
   geom_line( aes(x = n, y = emp.power, colour = quantile.est, linetype = type), data = dep.power.df, size = 1.6) +
-
+  geom_text(data = dep.endpoints, aes(x = 400, y = position, label = paste0(round(emp.power*100, digits = 0),"%"), colour = quantile.est), hjust = -0.15, size = 6, show.legend = FALSE) +
+  
   scale_colour_manual(name = expression(1-alpha),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
   
   theme(plot.title = element_text(size = 25),
