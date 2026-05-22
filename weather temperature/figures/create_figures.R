@@ -441,4 +441,66 @@ ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k
 
 
 
+########################################################################
+#### Plot of:  (all four cities)                                    ####
+####     - average difference over the day                          ####
+####     - difference of maxima of mean curves                      ####
+####     - difference of minima of mean curves                      ####
+########################################################################
+
+diff.results = data.frame() 
+
+for(k in 1:4){
+  
+  ###############################################################################
+  data.example     = list("Berlin", "Frankfurt_Main", "Hamburg", "Munich")     ##
+  data.example.pic = list("Berlin", "Frankfurt am Main", "Hamburg", "Munich")  ##
+  load(paste0("weather temperature/data sets/",data.example[[k]],".RData"))    ##
+  ###############################################################################
+  
+  
+  # Loading bandwidths for mean and difference estimation
+  Bandwidths = readRDS(paste0("weather temperature/bandwidth selection/Results/bw_",data.example[[k]],".rds"))
+  
+  # Mean and difference function estimation
+  est = est.results(data.s.34h,data.d.34h,Bandwidths,from = 1,to = 12)
+  
+  # Computing minimum of each month
+  min.d = est$dense  |> group_by(MONTH) |> mutate(min = min(ESTIMATE)) |> distinct(MONTH, min)
+  min.s = est$sparse |> group_by(MONTH) |> mutate(min = min(ESTIMATE)) |> distinct(MONTH, min)
+  
+  # Computing maximum of each month
+  max.d = est$dense  |> group_by(MONTH) |> mutate(max = max(ESTIMATE)) |> distinct(MONTH, max)
+  max.s = est$sparse |> group_by(MONTH) |> mutate(max = max(ESTIMATE)) |> distinct(MONTH, max)
+  
+  average  = data.frame(MONTH = factor(month.abb, levels = month.abb), value = unique(est$delta_int$ESTIMATE), City = data.example.pic[[k]], Value = "average")
+  min.diff = data.frame(MONTH = factor(month.abb, levels = month.abb), value = min.d$min - min.s$min, City = data.example.pic[[k]],          Value = "min.diff")
+  max.diff = data.frame(MONTH = factor(month.abb, levels = month.abb), value = max.d$max - max.s$max, City = data.example.pic[[k]],          Value = "max.diff")
+  diff.results = rbind(diff.results,average,min.diff,max.diff)
+  
+}
+
+ggplot(data = diff.results) +
+  geom_point( aes(x = MONTH,     y = value,  shape = Value, color = Value), size = 4, stroke = 3) +
+  geom_point( aes(x = MONTH,     y = value,                 color = Value), size = 10, shape = 95, data = diff.results |> filter(Value == "min.diff")) +
+  geom_line(  aes(x = MONTH,     y = value,  color = Value, group = City),  size = 1.2, data = diff.results |> filter(Value == "average"), alpha = 0.7) +
+  labs(x = "Month",  y = "Temperature in °C",title = bquote("")) +
+  
+  scale_shape_manual(values = c(16,3,95)) +
+  
+  theme(legend.text  = element_text(size = 26),
+        strip.text   = element_text(size = 28),
+        legend.title = element_text(size = 26),
+        axis.title.x = element_text(size = 24),     
+        axis.title.y = element_text(size = 24),
+        axis.text.x  = element_text(size = 16),     
+        axis.text.y  = element_text(size = 22)) +
+  
+  scale_y_continuous(breaks = c(0,1.5,3), limits = c(0,3.6)) +
+  
+  facet_wrap(~ City, ncol = 4, nrow = 1)
+
+ggsave(paste0("weather temperature/figures/all difference results.png"), width = 60, height = 18, units = "cm", dpi = 300)
+
+
 
