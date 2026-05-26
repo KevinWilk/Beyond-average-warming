@@ -1,6 +1,6 @@
 This repository contains all numerical results and code implementations associated with the paper:
 
-# Beyond the positive drift: Comparing historical and current daily temperature patterns based on two sample statistics for unbalanced dense-sparse functional data
+# Beyond average warming: Two-sample inference for dense-sparse functional data reveals changes in intraday temperature patterns
 
 <!-- badges: start -->
 <!-- badges: end -->
