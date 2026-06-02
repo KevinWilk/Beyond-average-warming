@@ -16,7 +16,7 @@ devtools::install_github("mbrgr/biLocPol")
 ```
 Important: “Mod_biLocPol.R“ contains apdapted and extended functions of this package.
 ``` r
-source("https://raw.githubusercontent.com/KevinWilk/Beyond-average-warming/Mod_biLocPol.R")
+source("https://raw.githubusercontent.com/KevinWilk/Beyond-average-warming/main/Mod_biLocPol.R")
 ```
 
 ## Structure
