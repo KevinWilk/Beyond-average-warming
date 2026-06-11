@@ -25,7 +25,7 @@ local.polynomial.weights = function(p, h, p.eval, parallel = F, m = 1,
                                     del = 0, x.design.grid = NULL,
                                     grid.type = "less", eval.type = "full", parallel.environment = T, ...){
   
-  p = p + 1 # adjustment for equal p in case of usage of eval.weights()
+  
   
   observation.grid = function(p = NULL, x = NULL, comp = "less") {
     if(is.null(x) & is.null(p))
