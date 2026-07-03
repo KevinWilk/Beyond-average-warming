@@ -7,14 +7,14 @@ This repository contains all numerical results and code implementations associat
 
 Kevin Wilk and Hajo Holzmann [arxiv](http://arxiv.org/abs/2605.27335). 
 
-Note the file 'Mod_BiLocPol.R' is based on the package “biLocPol” of which you can get the development version from [GitHub](https://github.com/mbrgr/biLocPol) with:
+Note the file `Mod_BiLocPol.R` is based on the package `biLocPol` of which you can get the development version from [GitHub](https://github.com/mbrgr/biLocPol) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("mbrgr/biLocPol")
 # library(biLocPol)
 ```
-Important: “Mod_biLocPol.R“ contains apdapted and extended functions of this package.
+Important: `Mod_biLocPol.R` contains apdapted and extended functions of this package.
 ``` r
 source("https://raw.githubusercontent.com/KevinWilk/Beyond-average-warming/main/Mod_biLocPol.R")
 ```
