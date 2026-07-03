@@ -19,9 +19,6 @@ Important: “Mod_biLocPol.R“ contains apdapted and extended functions of this
 source("https://raw.githubusercontent.com/KevinWilk/Beyond-average-warming/main/Mod_biLocPol.R")
 ```
 
-## Structure
-
-
 ## Comments
 
 Note that the calculation of the weights, the simulation and the application are paralallized with the “future.apply” and “future” package and performed using 
