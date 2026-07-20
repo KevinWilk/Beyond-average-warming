@@ -53,8 +53,8 @@ bw.d = unique(c(t(cov.Bandwidths.1),t(cov.Bandwidths.2),t(cov.Bandwidths.3),t(co
 
 
 # Optional: For parallelizing computations ####################
-options(future.globals.maxSize = 64 * 1024^3)                ##   
-plan(multisession, workers = 20) # MaRC3a: partition=mqtest ##
+options(future.globals.maxSize = 60 * 1024^3)                ##   
+plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
 #plan(multisession, workers = 60) # MaRC3a: partition=normal ##
 ###############################################################
 
@@ -64,7 +64,7 @@ p.eval = 137
 
 for(bw in bw.s){
 
-  w  = local.polynomial.weights(25,  bw, p.eval = p.eval, parallel = T, m = 1, del = 0, grid.type = "less", eval.type = "full", parallel.environment = F)
+  w  = local.polynomial.weights(35,  bw, p.eval = p.eval, parallel = T, m = 1, del = 0, grid.type = "less", eval.type = "full", parallel.environment = F)
   saveRDS(w, file = "weather temperature/kernel weights/full_w_s_lag0.rds")
   rm(w); gc()
   
@@ -72,7 +72,7 @@ for(bw in bw.s){
   
   for(l in 1:12){
     bw.lag = round(bw*1.1^l, digits = 2)
-    w.lag  = local.polynomial.weights(25, bw.lag, p.eval = p.eval, parallel = T, m = 1, del = 0, grid.type = "lesseq", eval.type = "full", parallel.environment = F)
+    w.lag  = local.polynomial.weights(35, bw.lag, p.eval = p.eval, parallel = T, m = 1, del = 0, grid.type = "lesseq", eval.type = "full", parallel.environment = F)
     saveRDS(w.lag, file = paste0("weather temperature/kernel weights/full_w_s_lag",l,".rds"))
     
     print(paste0("done: lag ", l))
