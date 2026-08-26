@@ -57,11 +57,17 @@ pd = 100
 #####################################################
 
 bw.optim.list = list()
-bw.optim.list = matrix(NA, nrow = 8, ncol = length(N),
+bw.optim.list = matrix(NA, nrow = 14, ncol = length(N),
                        dimnames = list(c("dense.optim.100","dense.hv.100",
-                                         "delta.optim.25","delta.hv.25",
-                                         "delta.optim.50","delta.hv.50",
-                                         "delta.optim.75","delta.hv.75"))) |> 
+                                         
+                                         "delta.optim.25" ,"delta.hv.25",
+                                         "delta.optim.50" ,"delta.hv.50",
+                                         "delta.optim.75" ,"delta.hv.75",
+                                         
+                                         "sparse.optim.25" ,"sparse.hv.25",
+                                         "sparse.optim.50" ,"sparse.hv.50",
+                                         "sparse.optim.75" ,"sparse.hv.75"))) |> 
+  
                                                                       as.data.frame()
 colnames(bw.optim.list) = N
 
@@ -80,6 +86,8 @@ for(i in 1:length(N)){
   
   print(paste0("Start: n = ",N[i]))
   
+  
+  # Bandwidth selection of mu[d] by densely sampled sets
   h.seq           = seq(0.08, 1, 0.01)
   bw.d.optim.list = h.optim(function(x){mu_d(x,delta_constant)},nd, pd, p.eval = 75, N = 1000, h.seq = h.seq, m = 2)
   bw.d.optim      = h.seq[which(bw.d.optim.list == min(bw.d.optim.list))]
@@ -88,8 +96,10 @@ for(i in 1:length(N)){
                                  func = function(x){mu_d(x,delta_constant)})
   bw.d            = mean(bw.d.sample)
   
-  print(paste0("done: dense for pd = 100"))
+  print(paste0("done: mu[d] for pd = 100"))
   
+  
+  # Bandwidth selection of delta by sparsely sampled as well as densely sampled sets
   h.seq                  = seq(0.08, 1, 0.01)
   bw.delta.optim.75.list = h.optim(function(x){delta(x,delta_constant)}, N[i], P[3], p.eval = 75, N = 1000, h.seq = h.seq, m = 2)
   bw.delta.optim.75      = h.seq[which(bw.delta.optim.75.list == min(bw.delta.optim.75.list))]
@@ -118,7 +128,43 @@ for(i in 1:length(N)){
   print(paste0("done: delta for p = ",P[1]))
   
   
-  bw.optim.list[ , i] = round(c(bw.d.optim, bw.d, bw.delta.optim.25, bw.delta.25, bw.delta.optim.50, bw.delta.50, bw.delta.optim.75, bw.delta.75), digits = 2)
+  # Bandwidth selection of mu[s] only by sparse sample
+  h.seq              = seq(0.08, 1, 0.01)
+  bw.s.optim.75.list = h.optim(mu, N[i], P[3], p.eval = 75, N = 1000, h.seq = h.seq, m = 2)
+  bw.s.optim.75      = h.seq[which(bw.s.optim.75.list == min(bw.s.optim.75.list))]
+  h.seq                  = if(N[i] >= 50){seq(0.08, 1, 0.02)}else{seq(0.14, 1, 0.02)}
+  bw.s.sample.75     = k.fold.hc.cv(N = 1000, n = N[i], p = P[3], K = 5 , gap = 5 , h.seq,  m = 2, func = mu)
+  bw.s.75            = mean(bw.s.sample.75)
+  print(paste0("done: mu[s] for p = ",P[3]))
+  
+  h.seq              = seq(0.1, 1, 0.01)
+  bw.s.optim.50.list = h.optim(mu ,N[i], P[2], p.eval = 75, N = 1000, h.seq = h.seq, m = 2)
+  bw.s.optim.50      = h.seq[which(bw.s.optim.50.list == min(bw.s.optim.50.list))]
+  h.seq                  = if(N[i] >= 50){seq(0.1, 1, 0.02)}else{seq(0.16, 1, 0.02)}
+  bw.s.sample.50     = k.fold.hc.cv(N = 1000, n = N[i], p = P[2], K = 5 , gap = 5 , h.seq,  m = 2, func = mu)
+  bw.s.50            = mean(bw.s.sample.50)
+  print(paste0("done: mu[s] for p = ",P[2]))
+  
+  h.seq              = seq(0.1, 1, 0.01)
+  bw.s.optim.25.list = h.optim(mu ,N[i], P[1], p.eval = 75, N = 1000, h.seq = h.seq, m = 2)
+  bw.s.optim.25      = h.seq[which(bw.s.optim.25.list == min(bw.s.optim.25.list))]
+  h.seq                  = if(N[i] >= 50){seq(0.1, 1, 0.02)}else{seq(0.16, 1, 0.02)}
+  bw.s.sample.25     = k.fold.hc.cv(N = 1000, n = N[i], p = P[1], K = 5 , gap = 5 , h.seq,  m = 2, func = mu)
+  bw.s.25            = mean(bw.s.sample.25)
+  print(paste0("done: mu[s] for p = ",P[1]))
+  
+  
+  bw.optim.list[ , i] = round(c(bw.d.optim, bw.d, 
+                                
+                                bw.delta.optim.25, bw.delta.25, 
+                                bw.delta.optim.50, bw.delta.50, 
+                                bw.delta.optim.75, bw.delta.75,
+                                
+                                bw.s.optim.25, bw.s.25, 
+                                bw.s.optim.50, bw.s.50, 
+                                bw.s.optim.75, bw.s.75), 
+                              
+                              digits = 2)
   
   
   file = paste0("Simulation/optimal bandwidth/Results/delta_constant_",delta_constant,"_Bandwidth.rds")
@@ -127,7 +173,9 @@ for(i in 1:length(N)){
 }
 
 
-plan(sequential)
 
+
+
+plan(sequential)
 
 
