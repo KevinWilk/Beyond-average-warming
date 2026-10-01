@@ -53,7 +53,7 @@ for(k in 1:4){
   
   Bandwidths = bw_month(data.s.34h,data.d.34h)
   file = paste0("weather temperature/bandwidth selection/Results/bw_",data.example[[k]],".rds")
-  saveRDS(cov.Bandwidths,file)
+  saveRDS(Bandwidths, file)
   print("save done")
 
   
@@ -85,7 +85,7 @@ for(k in 1:4){
 
 
 
-  cov.Bandwidths = cov.bw.month(data.sparse.days.5h, h.seq = seq(0.1,0.4,0.01), period.n = 24)
+  cov.Bandwidths = cov.bw.month(data.s.34h, h.seq = seq(0.1,0.4,0.01), period.n = 24)
   file = paste0("weather temperature/bandwidth selection/Results/bw_Gamma_s_",data.example[[k]],".rds")
   saveRDS(cov.Bandwidths,file)
   print("save done")
@@ -122,7 +122,7 @@ for(k in 1:4){
   
   
 
-  cov.Bandwidths = cov.bw.month(data.dense.days.3h, h.seq = seq(0.06,0.24,0.01), period.n = 144)
+  cov.Bandwidths = cov.bw.month(data.d.30h, h.seq = seq(0.06,0.24,0.01), period.n = 144)
   file = paste0("weather temperature/bandwidth selection/Results/bw_Gamma_d_",data.example[[k]],".rds")
   saveRDS(cov.Bandwidths,file)
   print("save done")
