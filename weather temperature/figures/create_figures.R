@@ -300,9 +300,8 @@ ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), wi
 #### Plot of difference function and integral with confidence bands ####
 ########################################################################
 
-integral.conf = readRDS(paste0("weather temperature/confidence bands/Results/CB_integral_",data.example[[k]],".rds"))
+integral.conf = readRDS(paste0("weather temperature/confidence bands/Results/MB_CB_integral_",data.example[[k]],".rds"))
 delta.conf    = readRDS(paste0("weather temperature/confidence bands/Results/CB_delta_",data.example[[k]],".rds"))
-
 
 if(k == 1){
   
@@ -323,10 +322,11 @@ ggplot() +
           axis.text.x  = element_text(size = 11),     
           axis.text.y  = element_text(size = 11)) +
     
-  scale_y_continuous(breaks = c(-1.5,0.,1.5,3,4.5), limits = c(-1.7, 6)) +
-  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
+  scale_y_continuous(breaks = c(0.,2.5,5), limits = c(-1, 5.2)) +
+  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00")) +
+    
   facet_wrap(~ MONTH, ncol = 6, nrow = 2)
-ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 30, height = 14, units = "cm", dpi = 300)
+  ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 30, height = 14, units = "cm", dpi = 300)
 
 }else{
 
@@ -345,10 +345,11 @@ ggplot() +
           axis.text.x  = element_text(size = 17),     
           axis.text.y  = element_text(size = 17)) +
     
-  scale_y_continuous(breaks = c(0,2.5,5), limits = c(-1.7, 6)) +
-  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20"))+
+    scale_y_continuous(breaks = c(0.,2.5,5), limits = c(-1, 6)) +
+    scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20")) +
+    
   facet_wrap(~ MONTH, ncol = 12, nrow = 1)
-ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 46, height = 10, units = "cm", dpi = 300)
+  ggsave(paste0("weather temperature/figures/difference_",data.example[[k]],".png"), width = 46, height = 10, units = "cm", dpi = 300)
 
 }
 
@@ -394,13 +395,14 @@ q.list              = readRDS(paste0("weather temperature/confidence bands/Resul
 delta.conf.compare  = CB(data.s.34h, est, lr.Gamma, q.list[1,], center = T)
 
 
+
 if(k == 1){
 
 ggplot() +
   labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of  "* delta - integral(delta) * " d" *lambda)) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = centered.delta.conf,  fill  = "grey6",  col = NA, alpha = 0.3,size = 0.5)+
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf.compare, fill  = "grey6",  col = NA, alpha = 0.2,size = 0.5, lty = 2)+
-  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "red", size = 0.8, show.legend = F, linetype = 2) +
+  geom_line(aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "red", size = 0.8, show.legend = F, linetype = 2) +
   
     theme(plot.title = element_text(size =17),
           legend.text = element_text(size =10),
@@ -411,8 +413,9 @@ ggplot() +
           axis.text.x  = element_text(size = 12),     
           axis.text.y  = element_text(size = 12)) +
   
-  ylim(-3.6, 4.1)+
-  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
+    scale_y_continuous(breaks = c(-2.5,-1.25,0,1.25,2.5), limits = c(-3.1, 3.1)) +  
+    scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00")) +
+    
   facet_wrap(~ MONTH, ncol = 6, nrow = 2)
 ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k]],".png"), width = 30, height = 14, units = "cm", dpi = 300)
 
@@ -431,7 +434,7 @@ ggplot() +
           axis.text.x  = element_text(size = 17),     
           axis.text.y  = element_text(size = 17)) +
   
-  scale_y_continuous(breaks = c(-3,0,3), limits = c(-3.6, 4.1)) +
+  scale_y_continuous(breaks = c(-2.5,0,2.5), limits = c(-3.5, 3.5)) +
   scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("0", "10", "20"))+
   facet_wrap(~ MONTH, ncol = 12, nrow = 1)
 ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k]],".png"), width = 46, height = 10, units = "cm", dpi = 300)
