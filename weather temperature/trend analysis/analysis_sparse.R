@@ -99,7 +99,7 @@ for(k in 1:4){                                                                  
                                                                                              #################
                                                                                              ################# 
   Bandwidths = bw_month(s.part1,s.part2)                                                          ############
-  file = paste0("weather temperature/trend analysis/Results/sparse_bw_",data.example[[k]],".rds") ############
+  file = paste0("weather temperature/trend analysis/trend results/sparse_bw_",data.example[[k]],".rds") ############
   saveRDS(Bandwidths, file)                                                                       ############
   print("save done")                                                                         #################
 }                                                                                            #################
@@ -204,8 +204,8 @@ for(k in 1:4){                                                                  
   print(paste0("done: ", month.name[m]))                                                                    ##
   }                                                                                                         ##
                               
-  saveRDS(cov.1.list , paste0("weather temperature/trend analysis/Results/sparse_list_Gamma_period1_",data.example[[k]],".rds"))
-  saveRDS(cov.2.list , paste0("weather temperature/trend analysis/Results/sparse_list_Gamma_period2_",data.example[[k]],".rds"))
+  saveRDS(cov.1.list , paste0("weather temperature/trend analysis/trend results/sparse_list_Gamma_period1_",data.example[[k]],".rds"))
+  saveRDS(cov.2.list , paste0("weather temperature/trend analysis/trend results/sparse_list_Gamma_period2_",data.example[[k]],".rds"))
   
                                                                                                             ##
 }                                                                                                           ##
@@ -260,13 +260,13 @@ for(k in 1:4){                                                                  
       
   
   # Mean and difference function: Estimation                                                                                              
-  Bandwidths = readRDS(paste0("weather temperature/trend analysis/Results/sparse_bw_",data.example[[k]],".rds"))   
+  Bandwidths = readRDS(paste0("weather temperature/trend analysis/trend results/sparse_bw_",data.example[[k]],".rds"))   
   est        = est.results(s.part1, s.part2, Bandwidths,from = 1,to = 12)                                   
                                                                                                          
 
   # Loading estimated lag covariance kernels for lag = 0,...,12 
-  cov.1.list = readRDS(paste0("weather temperature/trend analysis/Results/sparse_list_Gamma_period1_",data.example[[k]],".rds")) 
-  cov.2.list = readRDS(paste0("weather temperature/trend analysis/Results/sparse_list_Gamma_period2_",data.example[[k]],".rds")) 
+  cov.1.list = readRDS(paste0("weather temperature/trend analysis/trend results/sparse_list_Gamma_period1_",data.example[[k]],".rds")) 
+  cov.2.list = readRDS(paste0("weather temperature/trend analysis/trend results/sparse_list_Gamma_period2_",data.example[[k]],".rds")) 
   
   # Loading maximum lag of long run kernel 
   max.lag = readRDS(paste0("weather temperature/long run kernel/Results/max_lag_",data.example[[k]],".rds")) ## 
@@ -302,7 +302,7 @@ for(k in 1:4){                                                                  
   args.MB       = list(est = est, bandwidth = Bandwidths, B = 10000, dependent = T)
   integral.test = test.int(s.part1, s.part2, unique(est$delta_int$ESTIMATE), lr.var.1.month, lr.var.2.month, from = 1, to = 12, test = "two-sided", alpha = rep(0.95,12), approx = "MB", args.MB)
   
-  file = paste0("weather temperature/trend analysis/Results/sparse_quantile_integral_",data.example[[k]],".rds")
+  file = paste0("weather temperature/trend analysis/trend results/sparse_quantile_integral_",data.example[[k]],".rds")
   saveRDS(integral.test, file = file)
 
   integral.conf       = tibble(TIME = rep(hms::as_hms(c(as.POSIXct("1970-01-01 00:00:00"),as.POSIXct("1970-01-01 23:59:59"))),times = 12))
@@ -310,7 +310,7 @@ for(k in 1:4){                                                                  
   integral.conf$LO    = rep(unlist(integral.test$confInterval)[seq(1,24,2)], each = 2)
   integral.conf$MONTH =  factor(rep(month.name , each = 2), level = month.name)
 
-  file = paste0("weather temperature/trend analysis/Results/sparse_CB_integral_",data.example[[k]],".rds")    ##
+  file = paste0("weather temperature/trend analysis/trend results/sparse_CB_integral_",data.example[[k]],".rds")    ##
   saveRDS(integral.conf, file = file)                                                                        ##
                                                                                                              ## 
                                                                                                              ##
@@ -345,14 +345,14 @@ for(k in 1:4){                                                                  
   q.list = q.month(s.part1, s.part2, Bandwidths, est, lr.Gamma,                                             ##
                    from = 1, to = 12, alpha = rep(0.95,12), B = 10000, depend = T, int = F, grid = "sparse")##
                                                                                                             ##
-  file = paste0("weather temperature/trend analysis/Results/sparse_quantile_",data.example[[k]],".rds")     ##
+  file = paste0("weather temperature/trend analysis/trend results/sparse_quantile_",data.example[[k]],".rds")     ##
   saveRDS(q.list, file = file)                                                                              ##          
                                                                                                             ##
   # Skip:                                                                                                   
-  #q.list = readRDS(paste0("weather temperature/trend analysis/Results/sparse_quantile_",data.example[[k]],".rds"))                                                                                                       ##
+  #q.list = readRDS(paste0("weather temperature/trend analysis/trend results/sparse_quantile_",data.example[[k]],".rds"))                                                                                                       ##
   
   delta.conf = CB(s.part1, est, lr.Gamma, q.list[1,])                                                       ##
-  file = paste0("weather temperature/trend analysis/Results/sparse_CB_delta_",data.example[[k]],".rds")     ##
+  file = paste0("weather temperature/trend analysis/trend results/sparse_CB_delta_",data.example[[k]],".rds")     ##
   saveRDS(delta.conf, file = file)                                                                          ##
                                                                                                             ##
 }                                                                                                           ##
