@@ -68,30 +68,31 @@ k.fold.hc.cv = function(sample, h.seq, deg = 2, diff = F, K = 5,...){
 
 bw_month = function(data.sparse,data.dense){
   
-  bw_list = matrix(NA, nrow = 2, ncol = 12,dimnames = list(c("dense", "delta"), month.name)) |> as.data.frame()
+  bw_list = matrix(NA, nrow = 3, ncol = 12,dimnames = list(c("dense", "delta", "sparse"), month.name)) |> as.data.frame()
   
   results = future_sapply(c(1,4,7,10), function(m){
+    
     m.neighbor = c((m - 2) %% 12 + 1,m,m %% 12 + 1) 
+    
     sample.dense  = data.dense %>% filter(MONTH %in% month.name[m.neighbor]) |> dplyr::select(1,4:dim(data.dense)[2])
     sample.dense  = sample.dense[rowSums(is.na(sample.dense)) == 0,]
     K.dense  = length(unique(sample.dense$Year))
+    
     sample.sparse = data.sparse %>% filter(MONTH %in% month.name[m.neighbor])|> dplyr::select(1,4:dim(data.sparse)[2])
     sample.sparse = sample.sparse[rowSums(is.na(sample.sparse)) == 0,]
     K.sparse = length(unique(sample.sparse$Year))
     
-    bw.dense      = k.fold.hc.cv(sample = sample.dense, h.seq = seq(round(0.05*(30/34), digits = 2), 0.12,0.002), deg = 2, K = K.dense)  
-    bw.delta      = k.fold.hc.cv(sample = sample.sparse,h.seq = seq(round(0.095*(30/34), digits = 2),0.18,0.002), deg = 2, diff = T,K = K.sparse, sample.dense, bw.dense) 
+    bw.dense      = k.fold.hc.cv(sample = sample.dense,  h.seq = seq(0.04,  0.1,  0.001),  deg = 2, K = K.dense)  
+    bw.delta      = k.fold.hc.cv(sample = sample.sparse, h.seq = seq(0.08,  0.2,  0.001),  deg = 2, diff = T, K = K.sparse, sample.dense, bw.dense) 
+    bw.sparse     = k.fold.hc.cv(sample = sample.sparse, h.seq = seq(0.06,  0.1,  0.001),  deg = 2, K = K.sparse)  
     
-    sample.dense  = data.dense %>% filter(MONTH %in% month.name[m]) |> dplyr::select(1,4:dim(data.dense)[2])
-    sample.dense  = sample.dense[rowSums(is.na(sample.dense)) == 0,]
-    sample.sparse = data.sparse %>% filter(MONTH %in% month.name[m])|> dplyr::select(1,4:dim(data.sparse)[2])
-    sample.sparse = sample.sparse[rowSums(is.na(sample.sparse)) == 0,]
-    print(c(dim(sample.dense)[1],dim(sample.sparse)[1]))
-    c(bw.dense,bw.delta)
+    c(bw.dense,bw.delta,bw.sparse)
+    
   }, future.seed = T)
   
   bw_list[1, c(12,1:11)] = rep(results[1,],each = 3)
   bw_list[2, c(12,1:11)] = rep(results[2,],each = 3)
+  bw_list[3, c(12,1:11)] = rep(results[3,],each = 3)
   
   return(bw_list)
 }
