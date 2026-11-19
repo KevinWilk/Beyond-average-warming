@@ -31,7 +31,7 @@ source("Simulation/function_evaluation.R")
 C_inv = 1.2
 N  = c(25,50,100,200,300,400,500,600,700,800,900,1000)
 Nd = N * C_inv
-P  = c(25,50,75,15,16,18,20)
+P  = c(25,50,75)
 pd = 100
 p.eval = 75
 
