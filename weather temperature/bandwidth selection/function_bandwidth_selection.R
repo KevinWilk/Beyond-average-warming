@@ -6,7 +6,7 @@
 
 # K-Fold hv-block cross validation for univariate local polynomial estimator
 
-k.fold.hc.cv = function(sample, h.seq, deg = 2, diff = F, K = 5,...){
+k.fold.hc.cv = function(sample, h.seq, deg = 2, diff = F, K = 5, norm = "sup-norm",...){
   
   p = dim(sample)[2] - 2
   n = dim(sample)[1] 
@@ -27,7 +27,8 @@ k.fold.hc.cv = function(sample, h.seq, deg = 2, diff = F, K = 5,...){
         
         test_grp     = as.vector(apply(sample[test,-1],2,mean, na.rm = T))
         pred         = w_h %*% as.vector(apply(sample[train,-1],2,mean, na.rm = T))
-        max(abs(test_grp - pred))}))
+        if(norm == "sup-norm"){ max(abs(test_grp - pred)  )       }  
+        if(norm == "L2-norm"){  sum(   (test_grp - pred)^2)^(1/2) }  }))
       
       mean(max_diff)}
     
@@ -53,7 +54,9 @@ k.fold.hc.cv = function(sample, h.seq, deg = 2, diff = F, K = 5,...){
       
       test_grp     = as.vector(apply(res[test,-1],2,mean, na.rm = T))
       pred         = w_h %*% as.vector(apply(res[train,-1],2,mean, na.rm = T))
-      max(abs(test_grp - pred))}))
+      
+      if(norm == "sup-norm"){ max(abs(test_grp - pred)  )       }  
+      if(norm == "L2-norm"){  sum(   (test_grp - pred)^2)^(1/2) }  }))
     
     mean(max_diff)}
   
@@ -82,11 +85,11 @@ bw_month = function(data.sparse,data.dense){
     sample.sparse = sample.sparse[rowSums(is.na(sample.sparse)) == 0,]
     K.sparse = length(unique(sample.sparse$Year))
     
-    bw.dense      = k.fold.hc.cv(sample = sample.dense,  h.seq = seq(0.04,  0.1,  0.001),  deg = 2, K = K.dense)  
-    bw.delta      = k.fold.hc.cv(sample = sample.sparse, h.seq = seq(0.08,  0.2,  0.001),  deg = 2, diff = T, K = K.sparse, sample.dense, bw.dense) 
-    bw.sparse     = k.fold.hc.cv(sample = sample.sparse, h.seq = seq(0.06,  0.1,  0.001),  deg = 2, K = K.sparse)  
+    bw.dense      = k.fold.hc.cv(sample = sample.dense,  h.seq = seq(0.04, 0.1, 0.001),  deg = 2, K = K.dense, norm = "L2-norm")  
+    bw.delta      = k.fold.hc.cv(sample = sample.sparse, h.seq = seq(0.08, 0.18,0.001),  deg = 2, diff = T, K = K.sparse, sample.dense, bw.dense, norm = "L2-norm") 
+    bw.sparse     = k.fold.hc.cv(sample = sample.sparse, h.seq = seq(0.06, 0.1, 0.001),  deg = 2, K = K.sparse, norm = "L2-norm")    
     
-    c(bw.dense,bw.delta,bw.sparse)
+    c(bw.dense, bw.delta, bw.sparse)
     
   }, future.seed = T)
   
@@ -117,7 +120,7 @@ cov.k.fold.hc.cv = function(sample, h.seq, deg = 1, K = 5, w.parallel = F, perio
   
   help = function(h){
     w_h = local_polynomial_weights(p, h, p.eval = p, m = deg, parallel = w.parallel, parallel.environment = F)
-
+    
     max_diff = do.call(cbind,future_lapply(1:K, function(kk) {
       test     = which(sample$Year %in% grp[[kk]])
       train    = setdiff(1:n, test)
