@@ -29,7 +29,7 @@ source("Simulation/function_bandwidth_selection.R")
 C_inv = 1.2
 N  = c(15,25,50,75,100,150,200,250,300,350,400)
 Nd = N * C_inv
-P  = c(25,50,75)
+P  = c(25,50,75,15)
 pd = 100
 p.eval = 75
 
@@ -148,5 +148,53 @@ for(j in 2:length(N)){
 plan(sequential)
 
 
+
+
+
+
+
+
+
+
+
+
+
+##########################################################
+############## EXTRA: p = 15 #############################
+##########################################################
+
+
+# Optional: For parallelizing computations ####################
+options(future.globals.maxSize = 20 * 1024^3)                ##   
+plan(multisession, workers = 20) # MaRC3a: partition=mqtest  ##
+#plan(multisession, workers = 60) # MaRC3a: partition=normal ##
+###############################################################
+
+for(j in 2:length(N)){
+  
+  file.s = paste0("Simulation/weights/p ",P[4],"/full_w_lag0_",N[j],".rds")
+  bandwidth = get(paste0("lag_Gamma_s_",P[1],"_Bandwidth"))
+  w  = local.polynomial.weights(P[4], bandwidth[1,j], p.eval = p.eval, parallel = T, m = 1, del = 0, grid.type = "less", eval.type = "full", parallel.environment = F)
+  saveRDS(w, file = file.s)
+    
+  file.s = paste0("Simulation/weights/p ",P[4],"/full_w_lag1_",N[j],".rds")
+  bandwidth = get(paste0("lag_Gamma_s_",P[1],"_Bandwidth"))
+  w  = local.polynomial.weights(P[4], bandwidth[2,j], p.eval = p.eval, parallel = T, m = 1, del = 0, grid.type = "lesseq", eval.type = "full", parallel.environment = F)
+  saveRDS(w, file = file.s)
+    
+  file.s = paste0("Simulation/weights/p ",P[4],"/full_w_lag2_",N[j],".rds")
+  bandwidth = get(paste0("lag_Gamma_s_",P[1],"_Bandwidth"))
+  w  = local.polynomial.weights(P[4], bandwidth[3,j], p.eval = p.eval, parallel = T, m = 1, del = 0, grid.type = "lesseq", eval.type = "full", parallel.environment = F)
+  saveRDS(w, file = file.s)
+    
+  file.s = paste0("Simulation/weights/p ",P[4],"/full_w_lag3_",N[j],".rds")
+  bandwidth = get(paste0("lag_Gamma_s_",P[1],"_Bandwidth"))
+  w  = local.polynomial.weights(P[4], bandwidth[4,j], p.eval = p.eval, parallel = T, m = 1, del = 0, grid.type = "lesseq", eval.type = "full", parallel.environment = F)
+  saveRDS(w, file = file.s)
+  rm(w,bandwidth,file.s); gc()
+  
+}
+
+plan(sequential)
 
 
