@@ -136,7 +136,7 @@ names(month.lty) = month.abb
 
 ggplot() +
   geom_line(mapping = aes(x = TIME, y = SD.sparse, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("")) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote("")) +
   scale_color_manual(values = month.colors, name = "Month") +
   scale_linetype_manual(values = month.lty,limits = month.abb, name = "Month") +
   
@@ -155,7 +155,7 @@ ggsave(paste0("weather temperature/figures/sd_sparse_",data.example[[k]],".png")
 
 ggplot() +
   geom_line(mapping = aes(x = TIME, y = SD.dense, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("")) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote("")) +
   scale_color_manual(values = month.colors, name = "Month") +
   scale_linetype_manual(values = month.lty,limits = month.abb, name = "Month") +
   guides(colour      = guide_legend(override.aes = list(colour = NA, linetype = 0))) +
@@ -190,7 +190,7 @@ ggsave(paste0("weather temperature/figures/sd_dense_",data.example[[k]],".png"),
 
 ggplot() +
   geom_line(mapping = aes(x = TIME, y = SD.sparse.lr, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("")) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote("")) +
   scale_color_manual(values = month.colors, name = "Month") +
   scale_linetype_manual(values = month.lty,limits = month.abb, name = "Month") +
   
@@ -209,7 +209,7 @@ ggsave(paste0("weather temperature/figures/sd_sparse_long_run_",data.example[[k]
 
 ggplot() +
   geom_line(mapping = aes(x = TIME, y = SD.dense.lr, col = MONTH, linetype = MONTH), data = sqrt.month, size = 2, show.legend = T, alpha = 0.9) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("")) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote("")) +
   scale_color_manual(values = month.colors, name = "Month") +
   scale_linetype_manual(values = month.lty,limits = month.abb, name = "Month") +
   guides(colour      = guide_legend(override.aes = list(colour = NA, linetype = 0))) +
@@ -254,8 +254,8 @@ if(k == 1){
   
 ggplot() +
   geom_line(aes(x = TIME, y = ESTIMATE), data =est$dense, color = "turquoise", lty = 1, size = 1.5) +
-  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = est$sparse, color = "darkblue", size = 1.2, lty = 2, show.legend = F) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"})) +
+  geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = est$sparse, color = "darkblue", size = 0.7, lty = 2, show.legend = F) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"})) +
     
   theme(plot.title = element_text(size =17),
         legend.text = element_text(size =10),
@@ -267,8 +267,8 @@ ggplot() +
         axis.text.y  = element_text(size = 12)) +
     
   ylim(-4,27)+
-  scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
-  facet_wrap(~ MONTH, ncol = 6, nrow = 2)
+    scale_x_time(breaks = as_hms(c("00:00:00", "10:00:00", "20:00:00")),labels = c("00:00", "10:00", "20:00"))+
+    facet_wrap(~ MONTH, ncol = 6, nrow = 2)
 ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), width = 30, height = 14, units = "cm", dpi = 300)
 
 }else{
@@ -276,7 +276,7 @@ ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), wi
 ggplot() +
   geom_line(aes(x = TIME, y = ESTIMATE), data =est$dense, color = "turquoise", lty = 1, size = 1.5) +
   geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = est$sparse, color = "darkblue", size = 1.2, lty = 2, show.legend = F) +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"}*phantom(integral(delta)))) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote("Estimation of " *mu^{"[d]"} * " and " *mu^{"[s]"}*phantom(integral(delta)))) +
     
   theme(plot.title = element_text(size = 22),
         strip.text = element_text(size = 20),
@@ -300,15 +300,15 @@ ggsave(paste0("weather temperature/figures/means_",data.example[[k]],".png"), wi
 #### Plot of difference function and integral with confidence bands ####
 ########################################################################
 
-integral.conf = readRDS(paste0("weather temperature/confidence bands/Results/MB_CB_integral_",data.example[[k]],".rds"))
+integral.conf = readRDS(paste0("weather temperature/confidence bands/Results/CB_integral_",data.example[[k]],".rds"))
 delta.conf    = readRDS(paste0("weather temperature/confidence bands/Results/CB_delta_",data.example[[k]],".rds"))
 
 if(k == 1){
   
 ggplot() +
-  labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of  "* delta * "  and  " * integral(delta) * " d" *lambda)) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of  "* delta * "  and  " * integral(delta) * " d" *lambda)) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = integral.conf, fill = "darkred", col = NA, alpha = 0.3,size = 0.2)+
-  geom_line(aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data =est$delta_int, lty = 2, size = 1.8, alpha = 1, show.legend = T) +
+  geom_line(aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data =est$delta.int, lty = 2, size = 1.8, alpha = 1, show.legend = T) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf, fill = "grey6", col = NA, alpha = 0.2,size = 0.5)+
   geom_line(mapping = aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data = est$delta, size = 1.8, show.legend = F) +
   scale_color_gradient2(mid = "darkblue", high = "red", midpoint = -1, oob = scales::squish, limits = c(-1, 3), name = "°C") +
@@ -331,9 +331,9 @@ ggplot() +
 }else{
 
 ggplot() +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("Estimation of  "* delta * "  and  " * integral(delta) * " d" *lambda)) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote("Estimation of  "* delta * "  and  " * integral(delta) * " d" *lambda)) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = integral.conf, fill = "darkred", col = NA, alpha = 0.3,size = 0.2)+
-  geom_line(aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data =est$delta_int, lty = 2, size = 1.8, alpha = 1, show.legend = F) +
+  geom_line(aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data =est$delta.int, lty = 2, size = 1.8, alpha = 1, show.legend = F) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf, fill = "grey6", col = NA, alpha = 0.2,size = 0.5)+
   geom_line(mapping = aes(x = TIME, y = ESTIMATE, color = ESTIMATE), data = est$delta, size = 1.8, show.legend = F) +
   scale_color_gradient2(mid = "darkblue", high = "red", midpoint = -1, oob = scales::squish, limits = c(-1, 3), name = "°C") +
@@ -399,7 +399,7 @@ delta.conf.compare  = CB(data.s.34h, est, lr.Gamma, q.list[1,], center = T)
 if(k == 1){
 
 ggplot() +
-  labs(x = "Time", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of  "* delta - integral(delta) * " d" *lambda)) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote(.(data.example.pic[[k]]) *" (Germany): Estimation of  "* delta - integral(delta) * " d" *lambda)) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = centered.delta.conf,  fill  = "grey6",  col = NA, alpha = 0.3,size = 0.5)+
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf.compare, fill  = "grey6",  col = NA, alpha = 0.2,size = 0.5, lty = 2)+
   geom_line(aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "red", size = 0.8, show.legend = F, linetype = 2) +
@@ -422,7 +422,7 @@ ggsave(paste0("weather temperature/figures/centered_difference_",data.example[[k
 }else{
 
 ggplot() +
-  labs(x = "Time", y = "Temperature in °C",title = bquote("Estimation of  "* delta - integral(delta) * " d" *lambda)) +
+  labs(x = "Time in UTC", y = "Temperature in °C",title = bquote("Estimation of  "* delta - integral(delta) * " d" *lambda)) +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = centered.delta.conf, fill  = "grey6",  col = NA, alpha = 0.3,size = 0.5)+
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = delta.conf.compare,  fill  = "grey6",  col = NA, alpha = 0.2,size = 0.5, lty = 2)+
   geom_line(mapping = aes(x = TIME, y = ESTIMATE), data = centered.delta.conf, color = "red", size = 0.9, show.legend = F, linetype = 2) +
@@ -476,7 +476,7 @@ for(k in 1:4){
   max.d = est$dense  |> group_by(MONTH) |> mutate(max = max(ESTIMATE)) |> distinct(MONTH, max)
   max.s = est$sparse |> group_by(MONTH) |> mutate(max = max(ESTIMATE)) |> distinct(MONTH, max)
   
-  average  = data.frame(MONTH = factor(month.abb, levels = month.abb), value = unique(est$delta_int$ESTIMATE), City = data.example.pic[[k]], Value = "average")
+  average  = data.frame(MONTH = factor(month.abb, levels = month.abb), value = unique(est$delta.int$ESTIMATE), City = data.example.pic[[k]], Value = "average")
   min.diff = data.frame(MONTH = factor(month.abb, levels = month.abb), value = min.d$min - min.s$min, City = data.example.pic[[k]],          Value = "min.diff")
   max.diff = data.frame(MONTH = factor(month.abb, levels = month.abb), value = max.d$max - max.s$max, City = data.example.pic[[k]],          Value = "max.diff")
   diff.results = rbind(diff.results,average,min.diff,max.diff)
