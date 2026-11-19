@@ -1,25 +1,26 @@
 
 # Optimal bandwidth selection with known function for univariate local polynomial estimator 
 
-h.optim = function(func,n, p, p.eval, N, h.seq, m = 2){
+h.optim = function(func,n, p, p.eval, N, h.seq, m = 2, norm = "sup-norm"){
   
   x      = (1:p - 0.5)/p
   x.eval = (1:p.eval - 0.5)/p.eval
   
-  sup.error = future_sapply(1:length(h.seq), function(i){
-    weights = locPolWeights(x = x, bw = h.seq[i], deg = m, xeval = x.eval, kernel=EpaK)$locWeig
-    
-    max.errors = sapply(1:N, function(k){
-      Z_mean = apply(sim.d.OU(n, t = x,rho_B = 0.5,tau = 0,sigma = 4),2,mean)
-      e_mean = rnorm(p, mean=0, sd = 0.1/sqrt(n))
-      sample = func(x) + e_mean + Z_mean
-      max( abs( as.vector( weights %*% (sample)) - func(x.eval)))
-    })
-    
-    mean(max.errors)
-  }, future.seed = T)
+  w.h.list = lapply(h.seq, function(h){locPolWeights(x = x, bw = h, deg = m, xeval = x.eval, kernel = EpaK)$locWeig})  
+  true.val = func(x.eval) 
   
-  return(sup.error)
+  err = future_sapply(1:N, function(k){
+    Z_mean = apply(sim.d.OU(n, t = x,rho_B = 0.5,tau = 0,sigma = 4),2,mean)
+    e_mean = rnorm(p, mean=0, sd = 0.1/sqrt(n))
+    sample = func(x) + e_mean + Z_mean
+    
+    sapply(w.h.list, function(w_h){ if(norm == "sup-norm"){ max(abs(drop(w_h %*% sample) - true.val)  )      }
+                                    if(norm == "L2-norm" ){ sum(   (drop(w_h %*% sample) - true.val)^2)^(1/2)}   } ) 
+  }, future.seed = TRUE)
+  
+  sup.error = rowMeans(err)
+  
+  return( list(h.min = h.seq[which.min(sup.error)], h.list = data.frame(h = h.seq, mean.sup.error = sup.error)) )
 }
 
 
@@ -81,148 +82,181 @@ h.optim.cov = function(N, n, p, p.eval, h.seq, max.lag = 0, m = 1, w.parallel = 
 
 
 
+
+
 ###########################################################
 ##### hv-block cross validation in a K-fold framework #####
 ###########################################################
 
 # K-Fold hv-block cross validation for univariate local polynomial estimator 
 
-k.fold.hc.cv = function(N, n, p, h.seq, K = 5,gap = 0, m = 2, func, diff = F,...){
+cv.sim = function(N, n, p, h.seq, K = 5, gap = 0, m = 2, R = 5, func, diff = F, norm = "sup-norm",...){
   
   grp = rep(1:K, each = ceiling(n/K))
   x.design = (1:p - 0.5)/p
   
-  if(diff == F){help = function(h){
-    w_h = locPolWeights(x = x.design, bw = h, deg = m, xeval= x.design, kernel=EpaK)$locWeig
-    max_diff = numeric(K)
-    
-    future_replicate(N, {
-      Y = t(func(x.design) + t(sim.d.OU(n, t = x.design,rho_B = 0.5,tau = 0,sigma = 4)) + matrix(rnorm(length(x.design)*n, 0, 0.1),length(x.design), n))
-      for(kk in 1:K){
-        test     = setdiff(1:n,setdiff(1:n,which(grp == kk)))
-        l.gap    = max(min(test) - gap, 1) : (min(test) - 1)
-        l.gap    = l.gap[l.gap >= 1 & l.gap <= n]
-        r.gap    = (max(test) + 1) : min(max(test) + gap, n)
-        r.gap    = r.gap[r.gap >= 1 & r.gap <= n]
-        full.gap = c(l.gap, r.gap)
-        train    = setdiff(1:n, c(test, full.gap))
-        test_grp     = apply(Y[test,],2,mean)
-        pred         = w_h %*% apply(Y[train,],2,mean)
-        max_diff[kk] = max(abs(test_grp - pred))
-      }
-      mean(max_diff)
-    }, future.seed = T)
-  }
+  w.h.list = lapply(h.seq, function(h){locPolWeights(x = x.design, bw = h, deg = m, xeval = x.design, kernel = EpaK)$locWeig})
   
-  mean_sup = sapply(h.seq, help)
   
-  return(h.seq[apply(mean_sup, 1, which.min)])}
-  else{help = function(h,...){
+  if(diff == T){
     
-    arg <- list(...)
-    nd = arg[[1]]
-    pd = arg[[2]]
+    arg     = list(...)
+    nd      = arg[[1]]
+    pd      = arg[[2]]
     h.dense = arg[[3]]
     func2   = arg[[4]]
     
     w.dense = locPolWeights(x = (1:pd - 0.5)/pd, bw = h.dense, deg = m, xeval= x.design, kernel=EpaK)$locWeig
-    w_h = locPolWeights(x = x.design, bw = h, deg = m, xeval= x.design, kernel=EpaK)$locWeig
-    max_diff = numeric(K)
     
-    future_replicate(N, {
-      Y  = t(func(x.design)  + t(sim.d.OU(n, t = x.design,rho_B = 0.5,tau = 0,sigma = 4)) + matrix(rnorm(length(x.design)*n, 0, 0.1),length(x.design), n))
-      Yd = t(func2((1:pd - 0.5)/pd) + t(sim.d.OU(nd, t = (1:pd - 0.5)/pd,rho_B = 0.5,tau = 0,sigma = 4)) + matrix(rnorm(length((1:pd - 0.5)/pd)*nd, 0, 0.1),length((1:pd - 0.5)/pd), nd))
-      res = t(t(Y) - c(w.dense %*% apply(Yd,2,mean)))
-      
-      for(kk in 1:K){
-        test     = setdiff(1:n,setdiff(1:n,which(grp == kk)))
-        l.gap    = max(min(test) - gap, 1) : (min(test) - 1)
-        l.gap    = l.gap[l.gap >= 1 & l.gap <= n]
-        r.gap    = (max(test) + 1) : min(max(test) + gap, n)
-        r.gap    = r.gap[r.gap >= 1 & r.gap <= n]
-        full.gap = c(l.gap, r.gap)
-        train    = setdiff(1:n, c(test, full.gap))
-        
-        test_grp     = apply(res[test,],2,mean)
-        pred         = w_h %*% apply(res[train,],2,mean)
-        max_diff[kk] = max(abs(test_grp - pred))
-      }
-      mean(max_diff)
-    }, future.seed = T)
   }
   
-  mean_sup = sapply(h.seq, function(x){help(x,...)})
+  ## R-shifted K-fold partitions
+  L = ceiling(n/K)
+  make.folds = function(shift){
+    grp = ((0:(n-1) + shift) %/% L) %% K + 1                       
+    lapply(1:K, function(kk){
+      test = which(grp == kk)
+      excl = unique(unlist(lapply(test, function(i) max(1, i - gap):min(n, i + gap))))
+      list(test = test, train = setdiff(1:n, excl))
+    })
+  }
+  shifts = round(seq(0, L, length.out = R + 1))[1:R]                
+  folds  = do.call(c, lapply(shifts, make.folds))                   
   
-  return(h.seq[apply(mean_sup, 1, which.min)])}
+  mean_sup = future_sapply(1:N, function(r){
+    
+    Y = t(func(x.design)  + t(sim.d.OU(n, t = x.design,rho_B = 0.5,tau = 0,sigma = 4)) + matrix(rnorm(length(x.design)*n, 0, 0.1),length(x.design), n))
+    
+    if(diff == T){
+      
+      Yd = t(func2((1:pd - 0.5)/pd) + t(sim.d.OU(nd, t = (1:pd - 0.5)/pd,rho_B = 0.5,tau = 0,sigma = 4)) + matrix(rnorm(length((1:pd - 0.5)/pd)*nd, 0, 0.1),length((1:pd - 0.5)/pd), nd)) 
+      Y = t(t(Y) - c(w.dense %*% colMeans(Yd)))
+    }
+    
+    test.Kfold   = sapply(folds, function(f) colMeans(Y[f$test,  , drop = FALSE]))  
+    train.Kfold  = sapply(folds, function(f) colMeans(Y[f$train, , drop = FALSE]))   
+    
+    if(norm == "sup-norm"){ sapply(w.h.list, function(w_h){ mean(apply(abs(test.Kfold - as.matrix(w_h %*% train.Kfold))  , 2, max))} ) }
+    if(norm == "L2-norm"){  sapply(w.h.list, function(w_h){ mean(apply(   (test.Kfold - as.matrix(w_h %*% train.Kfold))^2, 2, sum)^(1/2))} ) }
+    
+  }, future.seed = TRUE)                                                         
+  
+  mean_sup = t(mean_sup)                                                             
+  h.seq[apply(mean_sup, 1, which.min)]
+  
 }
 
 
 
-#K-Fold hv-block cross validation for bivariate local polynomial estimator 
+# for one sample
 
-k.fold.hc.cv.cov = function(N, n, p, h.seq, K = 5,gap = 0, max.lag = 0, m = 1, w.parallel = T, func){
+kfold.cv = function(Y, h.seq, K = 5, gap = 0, m = 2, R = 5, parallel = F, norm = "sup-norm"){
   
-  grp = rep(1:K, each = ceiling(n/K))
+  n = dim(Y)[1]
+  p = dim(Y)[2]
+  
   x.design = (1:p - 0.5)/p
   
-  if(max.lag == 0){help = function(h){
-    w_h = local.polynomial.weights(p, h, p.eval = p, m = m, parallel = w.parallel, parallel.environment = F, grid.type = "less")
-    max_diff = numeric(K)
-    
-    future_replicate(N, {
-      Y = t(func(x.design) + t(sim.d.OU(n, t = x.design,rho_B = 0.5,tau = 0,sigma = 4)) + matrix(rnorm(length(x.design)*n, 0, 0.1),length(x.design), n))
-      for(kk in 1:K){
-        test     = setdiff(1:n,setdiff(1:n,which(grp == kk)))
-        l.gap    = max(min(test) - gap, 1) : (min(test) - 1)
-        l.gap    = l.gap[l.gap >= 1 & l.gap <= n]
-        r.gap    = (max(test) + 1) : min(max(test) + gap, n)
-        r.gap    = r.gap[r.gap >= 1 & r.gap <= n]
-        full.gap = c(l.gap, r.gap)
-        train    = setdiff(1:n, c(test, full.gap))
-        
-        test_grp     = matrix(observation.transformation(Y[test,], grid.type = "full"), p, p)
-        train_grp    = observation.transformation(Y[train,], grid.type = "less")
-        pred         = eval_weights(w_h, train_grp)
-        max_diff[kk] = max(abs((test_grp - pred)[!as.logical(diag(p))]))
-      }
-      mean(max_diff)
-    }, future.seed = T)
-  }}
-  else{help = function(h){
-    w_h = local.polynomial.weights(p, h, p.eval = p, m = m, parallel = w.parallel, parallel.environment = F, grid.type = "lesseq")
-    max_diff = matrix(numeric(K*max.lag), nrow = max.lag)
-    
-    future_replicate(N, {
-      Y = t(func(x.design) + t(sim.d.OU(n, t = x.design,rho_B = 0.5,tau = 0,sigma = 4)) + matrix(rnorm(length(x.design)*n, 0, 0.1),length(x.design), n))
-      for(kk in 1:K){
-        test     = setdiff(1:n,setdiff(1:n,which(grp == kk)))
-        l.gap    = max(min(test) - gap, 1) : (min(test) - 1)
-        l.gap    = l.gap[l.gap >= 1 & l.gap <= n]
-        r.gap    = (max(test) + 1) : min(max(test) + gap, n)
-        r.gap    = r.gap[r.gap >= 1 & r.gap <= n]
-        full.gap = c(l.gap, r.gap)
-        train    = setdiff(1:n, c(test, full.gap))
-        
-        for(j in 1:max.lag){
-          test_grp       = matrix(observation.transformation(Y[test,], grid.type = "full", lag = j), p, p)
-          train_grp      = observation.transformation(Y[train,], grid.type = "lesseq", lag = j)
-          pred           = eval.weights(w_h, train_grp, lag = j)
-          max_diff[j,kk] = max(abs((test_grp + t(test_grp) - pred - t(pred))))
-        }
-      }
-      apply(max_diff,1,mean)
-    }, future.seed = T)
+  L = ceiling(n/K)
+  
+  make.folds = function(shift){
+    grp = ((0:(n-1) + shift) %/% L) %% K + 1
+    lapply(1:K, function(kk){
+      test = which(grp == kk)
+      excl = unique(unlist(lapply(test, function(i) max(1, i - gap):min(n, i + gap))))
+      list(test = test, train = setdiff(1:n, excl))
+    })
   }
   
-  mean_sup = sapply(h.seq, help)
-  print("done")
-  bw.list = matrix(h.seq[apply(mean_sup, 1, which.min)],nrow = max.lag)
-  row.names(bw.list) = paste0("lag ", 1:max.lag)
-  return(bw.list)
+  shifts = round(seq(0, L, length.out = R + 1))[1:R]
+  folds  = do.call(c, lapply(shifts, make.folds))
   
-  }
+  test.Kfold   = sapply(folds, function(f) colMeans(Y[f$test,  , drop = FALSE]))  
+  train.Kfold  = sapply(folds, function(f) colMeans(Y[f$train, , drop = FALSE]))   
   
-  mean_sup = sapply(h.seq, help)
-  print("done")
-  h.seq[apply(mean_sup, 1, which.min)]
+  help = function(h){
+    w_h = locPolWeights(x = x.design, bw = h, deg = m, xeval = x.design, kernel = EpaK)$locWeig
+    if(norm == "sup-norm"){ return(mean(apply(abs(test.Kfold - w_h %*% train.Kfold)  , 2, max)))}
+    if(norm == "L2-norm" ){ return(mean(apply(   (test.Kfold - w_h %*% train.Kfold)^2, 2, sum)))}   
+  }                           
+  
+  mean_sup = if(parallel){ future_sapply(h.seq, help)}else{ sapply(h.seq, help)}
+  
+  return(h.seq[which.min(mean_sup)])
+  
 }
+
+                        
+#K-Fold hv-block cross validation for bivariate local polynomial estimator
+                        
+cv.sim.cov = function(N, n, p, h.seq, K = 5, gap = 0, R = 5, max.lag = 0, m = 1, w.parallel = T, func){
+  
+  x.design = (1:p - 0.5)/p
+  
+  if(max.lag == 0){ grid.type = "less" }else{ grid.type = "lesseq" }
+  w.h.list = lapply(h.seq, function(h){ local.polynomial.weights(p, h, p.eval = p, m = m, parallel = w.parallel, parallel.environment = F, grid.type = grid.type) })
+  
+  
+  ## R-shifted K-fold partitions
+  L = ceiling(n/K)
+  make.folds = function(shift){
+    grp = ((0:(n-1) + shift) %/% L) %% K + 1                       
+    lapply(1:K, function(kk){
+      test = which(grp == kk)
+      excl = unique(unlist(lapply(test, function(i) max(1, i - gap):min(n, i + gap))))
+      list(test = test, train = setdiff(1:n, excl))
+    })
+  }
+  shifts = round(seq(0, L, length.out = R + 1))[1:R]                
+  folds  = do.call(c, lapply(shifts, make.folds))                   
+  
+  if(max.lag == 0){
+    
+    mean_sup = future_sapply(1:N, function(r){
+    
+    Y = t(func(x.design) + t(sim.d.OU(n, t = x.design,rho_B = 0.5,tau = 0,sigma = 4)) + matrix(rnorm(length(x.design)*n, 0, 0.1),length(x.design), n))
+    
+    test.Kfold   = lapply(folds, function(f) matrix(observation.transformation(Y[f$test,  , drop = FALSE], grid.type = "full"), p, p) )  
+    train.Kfold  = lapply(folds, function(f)        observation.transformation(Y[f$train, , drop = FALSE], grid.type = grid.type)     )   
+    
+    sapply(w.h.list, function(w_h){ mean(sapply(1:(K*R),function(k){ max(abs((test.Kfold[[k]] - eval_weights(w_h, train.Kfold[[k]]))[!as.logical(diag(p))]))} ) )} ) 
+    
+    }, future.seed = TRUE)   
+  
+    mean_sup = t(mean_sup)
+  
+    return(h.seq[apply(mean_sup, 1, which.min)])
+  
+  }else{ 
+  
+    bw.list = future_sapply(1:N, function(r){
+    
+      Y = t(func(x.design) + t(sim.d.OU(n, t = x.design,rho_B = 0.5,tau = 0,sigma = 4)) + matrix(rnorm(length(x.design)*n, 0, 0.1),length(x.design), n))
+    
+      sapply(1:max.lag, function(j){
+        
+        test.Kfold   = lapply(folds, function(f) matrix(observation.transformation(Y[f$test,  , drop = FALSE], grid.type = "full", lag = j), p, p) )  
+        train.Kfold  = lapply(folds, function(f)        observation.transformation(Y[f$train, , drop = FALSE], grid.type = grid.type, lag = j)     )  
+        
+        mean_sup = sapply(w.h.list, function(w_h){ mean(sapply(1:(K*R),function(k){ max(abs((test.Kfold[[k]] - eval.weights(w_h, train.Kfold[[k]], lag = j))[!as.logical(diag(p))]))} ))} ) 
+    
+        h.seq[which.min(mean_sup)]
+        
+      })
+      
+    }, future.seed = TRUE)   
+  
+    bw.list = matrix(bw.list, nrow = max.lag, dimnames = list(paste0("lag ", 1:max.lag), NULL))
+  
+    return(bw.list)
+  }
+}
+
+
+
+
+
+
+
+
+
