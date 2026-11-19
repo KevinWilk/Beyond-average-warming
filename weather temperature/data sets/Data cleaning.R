@@ -94,7 +94,7 @@ for(k in 1:4){
   
   
   
-saveRDS(data.d, file = "data.rds")
+  saveRDS(data.d, file = "data.rds")
   
   
   
@@ -577,7 +577,7 @@ saveRDS(data.d, file = "data.rds")
     data.s.part2 = dataDWD(link, force = FALSE, read = TRUE, quiet = TRUE)
     rm(link)
     data.s.part2$MESS_DATUM = data.s.part2$MESS_DATUM - lubridate::hours(1) # MEZ = UTC + 1
-
+    
     data.s.part2$Year  = year(data.s.part2$MESS_DATUM)
     data.s.part2$MONTH = month(data.s.part2$MESS_DATUM)
     data.s.part2$MONTH = factor(data.s.part2$MONTH, levels = 1:12, labels = month.name)
@@ -729,12 +729,12 @@ saveRDS(data.d, file = "data.rds")
     unlist(as.vector(clean.s[3157 ,c(10:15)]))
     unlist(as.vector(clean.s[4169 ,c(1:10)]))
     
-    clean.s[3157, 12 ]   = 18.0
-    clean.s[4169,  2 ]   = 9.4
+    clean.s[3157, 11 ]   = 18.0
+    clean.s[4169,  1 ]   = 9.4
     
     #sign error
     unlist(as.vector(clean.s[1121 ,c(10:15)]))
-    clean.s[1121, 13 ]   = -clean.s[1121, 13 ]
+    clean.s[1121, 12 ]   = -clean.s[1121, 12 ]
   
     # normal weather
     unlist(as.vector(clean.s[2010 ,c(16:20)]))
