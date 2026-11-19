@@ -23,7 +23,7 @@ source("weather temperature/trend analysis/functions.R")
 
 
 
-bw_month = function(data.1, data.2){
+bw.month = function(data.1, data.2){
   
   bw_list = matrix(NA, nrow = 3, ncol = 12,dimnames = list(c("period 1", "delta", "period 2"), month.name)) |> as.data.frame()
   
@@ -39,9 +39,9 @@ bw_month = function(data.1, data.2){
     sample.1 = sample.1[rowSums(is.na(sample.1)) == 0,]
     K.1 = length(unique(sample.1$Year))
     
-    bw.2      = k.fold.hc.cv(sample = sample.2, h.seq = seq(0.09, 0.16, 0.005),  deg = 2, K = K.2)  
-    bw.delta  = k.fold.hc.cv(sample = sample.1, h.seq = seq(0.09, 0.16, 0.005),  deg = 2, diff = T, K = K.1, sample.2, bw.2) 
-    bw.1      = k.fold.hc.cv(sample = sample.1, h.seq = seq(0.09, 0.16, 0.005),  deg = 2, K = K.1)  
+    bw.2      = k.fold.hc.cv(sample = sample.2, h.seq = seq(0.09, 0.16, 0.005),  deg = 2, K = K.2, norm = "L2-norm")  
+    bw.delta  = k.fold.hc.cv(sample = sample.1, h.seq = seq(0.09, 0.16, 0.005),  deg = 2, diff = T, K = K.1, sample.2, bw.2, norm = "L2-norm") 
+    bw.1      = k.fold.hc.cv(sample = sample.1, h.seq = seq(0.09, 0.16, 0.005),  deg = 2, K = K.1, norm = "L2-norm")  
     
     c(bw.2,bw.delta,bw.1)
     
@@ -82,8 +82,8 @@ bw_month = function(data.1, data.2){
                                                                                              #################
 # Optional: For parallelizing computations                                                   #################
 options(future.globals.maxSize = 64 * 1024^3)                                                #################
-plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                 #################
-#plan(multisession, workers = 60) # MaRC3a: partition=normal                                 #################
+#plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                #################
+plan(multisession, workers = 60) # MaRC3a: partition=normal                                  #################
                                                                                              #################
 for(k in c(1,2)){                                                                            #################
                                                                                              #################
@@ -106,7 +106,7 @@ for(k in c(1,2)){                                                               
   
                                                                                              #################
                                                                                              ################# 
-  Bandwidths = bw_month(s.part1,s.part2)                                                          ############
+  Bandwidths = bw.month(s.part1,s.part2)                                                          ############
   file = paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_bw_",data.example[[k]],".rds")
   saveRDS(Bandwidths, file)                                                                       ############
   print("save done")                                                                         #################
@@ -129,8 +129,8 @@ plan(sequential)                                                                
                                                                                                             ##
 # Optional: For parallelizing computations                                                                  ##
 options(future.globals.maxSize = 64 * 1024^3)                                                               ##
-plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                                ##
-#plan(multisession, workers = 60) # MaRC3a: partition=normal                                                ##
+#plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                               ##
+plan(multisession, workers = 60) # MaRC3a: partition=normal                                                 ##
                                                                                                             ##
 for(k in c(1,2)){                                                                                           ##   
 #                   1 (Berlin)                                                                              ##
@@ -258,8 +258,8 @@ plan(sequential)                                                                
                                                                                                              ##
 # Optional: For parallelizing computations                                                                   ##
 options(future.globals.maxSize = 64 * 1024^3)                                                                ##
-plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                                 ##
-#plan(multisession, workers = 60) # MaRC3a: partition=normal                                                 ##
+#plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                                ##
+plan(multisession, workers = 60) # MaRC3a: partition=normal                                                  ##
                                                                                                              ##
 for(k in c(1,2)){                                                                                            ##   
 #                   1 (Berlin)                                                                               ##
@@ -318,11 +318,23 @@ for(k in c(1,2)){                                                               
                                                                                                              ##
 ###############################################################################################################
 ### Integral of delta test with construction of confidence bands ##############################################
-###############################################################################################################                  
+############################################################################################################### 
+                                                                                                             ##
+  if(k == 1){         s.24h.part1 = data.s.24h |>                                                            ##                                                            
+                                     filter(Year < 1957 | Year == 1957  & MONTH   %in% month.name[1:4])      ##                                            
+                      s.24h.part2 = data.s.24h |>                                                            ##                                           
+                                     filter(Year > 1957 | Year == 1957  & !(MONTH %in% month.name[1:4]))     ##
+  }else if(k == 2){                                                                                          ##
+                      s.24h.part1 = data.s.24h |>                                                            ##                 
+                                     filter(Year < 1968 | Year == 1968  & MONTH   %in% month.name[1:6])      ##                              
+                      s.24h.part2 = data.s.24h |>                                                            ##
+                                     filter(Year > 1968 | Year == 1968  & !(MONTH %in% month.name[1:6]))     ##
+  }                                                                                                          ##
                                                                                                              ##
   set.seed(2005)
   args.MB       = list(est = est, bandwidth = Bandwidths, B = 10000, dependent = T)
-  integral.test = test.int(s.part1, s.part2, unique(est$delta_int$ESTIMATE), lr.var.1.month, lr.var.2.month, from = 1, to = 12, test = "two-sided", alpha = rep(0.95,12), approx = "MB", args.MB)
+  integral.test = test.int(s.24h.part1, s.24h.part2, unique(est$delta.int$ESTIMATE), lr.var.1.month, lr.var.2.month, 
+                           from = 1, to = 12, test = "two-sided", alpha = rep(0.95,12), approx = "MB", args.MB)
   
   file = paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_quantile_integral_",data.example[[k]],".rds")
   saveRDS(integral.test, file = file)
@@ -374,17 +386,84 @@ for(k in c(1,2)){                                                               
 ##############################################################################################################            
                                                                                                             ## 
   set.seed(2005)                                                                                            ##
-  q.list = q.month(s.part1, s.part2, Bandwidths, est, lr.Gamma,                                             ##
-                   from = 1, to = 12, alpha = rep(0.95,12), B = 10000, depend = T, int = F, grid = "sparse")##
+  q.list = q.month(s.24h.part1, s.24h.part2, Bandwidths, est, lr.Gamma,                                     ##
+                   from = 1, to = 12, alpha = rep(0.95,12), B = 10000, depend = T, int = F)                 ##
                                                                                                             ##
-  file = paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_quantile_",data.example[[k]],".rds") ##
+  file = paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_quantile_",data.example[[k]],".rds")  
   saveRDS(q.list, file = file)                                                                              ##          
                                                                                                             ##
   # Skip:                                                                                                   
-  #q.list = readRDS(paste0("weather temperature/trend analysis/Supplement Results part2/sparse_quantile_",data.example[[k]],".rds"))
+  #q.list = readRDS(paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_quantile_",data.example[[k]],".rds"))
   
   delta.conf = CB(s.part1, est, lr.Gamma, q.list[1,])                                                       ##
-  file = paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_CB_delta_",data.example[[k]],".rds") ##
+  file = paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_CB_delta_",data.example[[k]],".rds") 
+  saveRDS(delta.conf, file = file)                                                                          ##
+                                                                                                            ##
+##############################################################################################################        
+### Calculating diagonal of projection of long run covariance matrix for each month ##########################
+##############################################################################################################            
+                                                                                                            ##
+  lr.P.Gamma.2.month = lapply(1:12, function(m) {
+    
+    start = 21; end = 116
+    
+    lr.cov.24 = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                  function(j){if(j >= 2){
+                                    (cov.2.list[[m]][[j]][start:end,start:end]+t(cov.2.list[[m]][[j]][start:end,start:end]))*(1-(j-1)/(max.lag[m,2]+1))
+                                  }else{cov.2.list[[m]][[j]][start:end,start:end]} 
+                                  }))
+    start = 21; end = 117
+    
+    lr.cov.25 = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                  function(j){if(j >= 2){
+                                    (cov.2.list[[m]][[j]][start:end,start:end]+t(cov.2.list[[m]][[j]][start:end,start:end]))*(1-(j-1)/(max.lag[m,2]+1))
+                                  }else{cov.2.list[[m]][[j]][start:end,start:end]} 
+                                  }))
+    
+    return(diag(lr.cov.25) - 2*rowMeans(lr.cov.25) + mean(lr.cov.24)  )})
+  
+  
+  lr.P.Gamma.1.month = lapply(1:12, function(m) {
+    
+    start = 21; end = 116
+    
+    lr.cov.24 = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                  function(j){if(j >= 2){
+                                    (cov.1.list[[m]][[j]][start:end,start:end]+t(cov.1.list[[m]][[j]][start:end,start:end]))*(1-(j-1)/(max.lag[m,2]+1))
+                                  }else{cov.1.list[[m]][[j]][start:end,start:end]} 
+                                  }))
+    start = 21; end = 117
+    
+    lr.cov.25 = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                  function(j){if(j >= 2){
+                                    (cov.1.list[[m]][[j]][start:end,start:end]+t(cov.1.list[[m]][[j]][start:end,start:end]))*(1-(j-1)/(max.lag[m,2]+1))
+                                  }else{cov.1.list[[m]][[j]][start:end,start:end]} 
+                                  }))
+    
+    return(diag(lr.cov.25) - rowMeans(lr.cov.25) - colMeans(lr.cov.25) + mean(lr.cov.25)  )})
+  
+  
+  P.Gamma.lr = lapply(1:12, function(m) { sample.2  = s.24h.part2 %>% filter(MONTH %in% month.name[m]) |> dplyr::select(4:dim(s.24h.part2)[2])
+                                          sample.2  = sample.2[rowSums(is.na(sample.2)) == 0,]
+                                          sample.1 = s.24h.part1 %>% filter(MONTH %in% month.name[m])|> dplyr::select(4:dim(s.24h.part1)[2])
+                                          sample.1 = sample.1[rowSums(is.na(sample.1)) == 0,]                                     
+  return(lr.P.Gamma.1.month[[m]] + dim(sample.1)[1] / dim(sample.2)[1] * lr.P.Gamma.2.month[[m]])})         ##  
+                                                                                                            ##
+##############################################################################################################               
+### Dependent Multiplier Bootstrap on non centered difference function for each month ########################   
+##############################################################################################################  
+  set.seed(2004)                                                                                            ##
+  q.list = q.month(s.24h.part1, s.24h.part2, Bandwidths, est, P.Gamma.lr,                                   ##
+                   from = 1, to = 12, alpha = rep(0.95,12), B = 10000, depend = T, int = T)                 ##
+                                                                                                            ##
+  file = paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_P_quantile_",data.example[[k]],".rds")
+  saveRDS(q.list, file = file)                                                                              ##          
+                                                                                                            ##
+  # Skip:                                                                                                   
+  #q.list = readRDS(paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_P_quantile_",data.example[[k]],".rds"))                                                                                                                                                 ##
+  
+  delta.conf = CB(s.24h.part1, est, P.Gamma.lr, q.list[1,])                                                 ##
+  file = paste0("weather temperature/trend analysis/relocation results/sparse_",station[[k]],"_CB_centered_delta_",data.example[[k]],".rds") 
   saveRDS(delta.conf, file = file)                                                                          ##
                                                                                                             ##
 }                                                                                                           ##
@@ -422,7 +501,7 @@ plan(sequential)                                                                
 
 
 
-bw_month = function(data.1, data.2){
+bw.month = function(data.1, data.2){
   
   bw_list = matrix(NA, nrow = 3, ncol = 12,dimnames = list(c("period (2014-11 - 2025)", "delta", "period (2000 - 2014-10)"), month.name)) |> as.data.frame()
   
@@ -438,9 +517,9 @@ bw_month = function(data.1, data.2){
     sample.1 = sample.1[rowSums(is.na(sample.1)) == 0,]
     K.1 = length(unique(sample.1$Year))
     
-    bw.2      = k.fold.hc.cv(sample = sample.2, h.seq = seq(0.045, 0.1,  0.001),  deg = 2, K = K.2)  
-    bw.delta  = k.fold.hc.cv(sample = sample.1, h.seq = seq(0.055, 0.15, 0.001),  deg = 2, diff = T, K = K.1, sample.2, bw.2) 
-    bw.1      = k.fold.hc.cv(sample = sample.1, h.seq = seq(0.045, 0.1,  0.001),  deg = 2, K = K.1)  
+    bw.2      = k.fold.hc.cv(sample = sample.2, h.seq = seq(0.045, 0.1,  0.001),  deg = 2, K = K.2, norm = "L2-norm")  
+    bw.delta  = k.fold.hc.cv(sample = sample.1, h.seq = seq(0.055, 0.15, 0.001),  deg = 2, diff = T, K = K.1, sample.2, bw.2, norm = "L2-norm") 
+    bw.1      = k.fold.hc.cv(sample = sample.1, h.seq = seq(0.045, 0.1,  0.001),  deg = 2, K = K.1, norm = "L2-norm")  
     
     c(bw.2,bw.delta,bw.1)
     
@@ -481,8 +560,8 @@ bw_month = function(data.1, data.2){
                                                                                              #################
 # Optional: For parallelizing computations                                                   #################
 options(future.globals.maxSize = 64 * 1024^3)                                                #################
-plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                 #################
-#plan(multisession, workers = 60) # MaRC3a: partition=normal                                 #################
+#plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                #################
+plan(multisession, workers = 60) # MaRC3a: partition=normal                                  #################
                                                                                              #################
                                                                                              #################
   # 1 (Frankfurt am Main)                                                                    #################
@@ -498,7 +577,7 @@ plan(multisession, workers = 120) # MaRC3a: partition=mqtest                    
                                                                                              #################
                                                                                              #################
                                                                                              ################# 
-  Bandwidths = bw_month(d.part1,d.part2)                                                         #############
+  Bandwidths = bw.month(d.part1,d.part2)                                                         #############
   file = paste0("weather temperature/trend analysis/relocation results/dense_",station[[k]],"_bw_",data.example[[k]],".rds") 
   saveRDS(Bandwidths, file)                                                                      #############
   print("save done")                                                                         #################
@@ -522,8 +601,8 @@ plan(sequential)                                                                
                                                                                                             ##
 # Optional: For parallelizing computations                                                                  ##
 options(future.globals.maxSize = 64 * 1024^3)                                                               ##
-plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                                ##
-#plan(multisession, workers = 60) # MaRC3a: partition=normal                                                ##
+#plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                               ##
+plan(multisession, workers = 60) # MaRC3a: partition=normal                                                 ##
                                                                                                             ##
                                                                                                             ##
   # 1 (Frankfurt am Main)                                                                                   ##
@@ -532,7 +611,7 @@ plan(multisession, workers = 120) # MaRC3a: partition=mqtest                    
   station      = list("01420")                                                                              ##
   load(paste0("weather temperature/data sets/",data.example[[k]],".RData"))                                 ##
                                                                                                             ##
-  # Seperate in two time periods: (2000 - 2014-10) and (2014-11 - 2025)                                     ##           ##  
+  # Seperate in two time periods: (2000 - 2014-10) and (2014-11 - 2025)                                     ##           
                                                                                                             ##
   d.part1 = data.d.34h |> filter(Year < 2014 | Year == 2014  &   MONTH %in% month.name[1:10])               ##                             
   d.part2 = data.d.34h |> filter(Year > 2014 | Year == 2014  & !(MONTH %in% month.name[1:10]))              ##
@@ -643,8 +722,8 @@ plan(multisession, workers = 120) # MaRC3a: partition=mqtest                    
                                                                                                              ##
 # Optional: For parallelizing computations                                                                   ##
 options(future.globals.maxSize = 64 * 1024^3)                                                                ##
-plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                                 ##
-#plan(multisession, workers = 60) # MaRC3a: partition=normal                                                 ##
+#plan(multisession, workers = 120) # MaRC3a: partition=mqtest                                                ##
+plan(multisession, workers = 60) # MaRC3a: partition=normal                                                  ##
                                                                                                              ##
   # 1 (Frankfurt am Main)                                                                                    ##
   k = 1                                                                                                      ##                                                                                                          ##   
@@ -695,9 +774,13 @@ plan(multisession, workers = 120) # MaRC3a: partition=mqtest                    
   ### Integral of delta test with construction of confidence bands ##############################################
   ###############################################################################################################                  
                                                                                                                ##
+  d.24h.part1 = data.d.24h |> filter(Year < 2014 | Year == 2014  &   MONTH %in% month.name[1:10])              ##                           
+  d.24h.part2 = data.d.24h |> filter(Year > 2014 | Year == 2014  & !(MONTH %in% month.name[1:10]))             ##
+  
   set.seed(2005)
   args.MB       = list(est = est, bandwidth = Bandwidths, B = 10000, dependent = T)
-  integral.test = test.int(d.part1, d.part2, unique(est$delta_int$ESTIMATE), lr.var.1.month, lr.var.2.month, from = 1, to = 12, test = "two-sided", alpha = rep(0.95,12), approx = "MB", args.MB)
+  integral.test = test.int(d.24h.part1, d.24h.part2, unique(est$delta.int$ESTIMATE), lr.var.1.month, lr.var.2.month, 
+                           from = 1, to = 12, test = "two-sided", alpha = rep(0.95,12), approx = "MB", args.MB)
   
   file = paste0("weather temperature/trend analysis/relocation results/dense_",station[[k]],"_quantile_integral_",data.example[[k]],".rds")
   saveRDS(integral.test, file = file)
@@ -746,22 +829,90 @@ plan(multisession, workers = 120) # MaRC3a: partition=mqtest                    
   ############################################################################################################          
                                                                                                             ## 
   set.seed(2005)                                                                                            ##
-  q.list = q.month(d.part1, d.part2, Bandwidths, est, lr.Gamma,                                             ##
-                   from = 1, to = 12, alpha = rep(0.95,12), B = 10000, depend = T, int = F, grid = "dense") ##
+  q.list = q.month(d.24h.part1, d.24h.part2, Bandwidths, est, lr.Gamma,                                     ##
+                   from = 1, to = 12, alpha = rep(0.95,12), B = 10000, depend = T, int = F)                 ##
                                                                                                             ##
   file = paste0("weather temperature/trend analysis/relocation results/dense_",station[[k]],"_quantile_",data.example[[k]],".rds")     
   saveRDS(q.list, file = file)                                                                              ##
                                                                                                             ##
   # Skip:                                                                                                   
-  #q.list = readRDS(paste0("weather temperature/trend analysis/relocation results/dense_",station[[k]],"_quantile_",data.example[[k]],".rds"))                                                                                                      
+  #q.list = readRDS(paste0("weather temperature/relocation results/relocation results/dense_",station[[k]],"_quantile_",data.example[[k]],".rds"))                                                                                                      
   
   delta.conf = CB(d.part1, est, lr.Gamma, q.list[1,])                                                       ##
   file = paste0("weather temperature/trend analysis/relocation results/dense_",station[[k]],"_CB_delta_",data.example[[k]],".rds")      
   saveRDS(delta.conf, file = file)                                                                          ##
                                                                                                             ##
-                                                                                                           ##
-plan(sequential)                                                                                            ##    
                                                                                                             ##
+ #############################################################################################################        
+ ## Calculating diagonal of projection of long run covariance matrix for each month ##########################
+ #############################################################################################################            
+                                                                                                            ##
+  lr.P.Gamma.2.month = lapply(1:12, function(m) {
+    
+    start = 21; end = 116
+    
+    lr.cov.24 = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                  function(j){if(j >= 2){
+                                    (cov.2.list[[m]][[j]][start:end,start:end]+t(cov.2.list[[m]][[j]][start:end,start:end]))*(1-(j-1)/(max.lag[m,2]+1))
+                                  }else{cov.2.list[[m]][[j]][start:end,start:end]} 
+                                  }))
+    start = 21; end = 117
+    
+    lr.cov.25 = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                  function(j){if(j >= 2){
+                                    (cov.2.list[[m]][[j]][start:end,start:end]+t(cov.2.list[[m]][[j]][start:end,start:end]))*(1-(j-1)/(max.lag[m,2]+1))
+                                  }else{cov.2.list[[m]][[j]][start:end,start:end]} 
+                                  }))
+    
+    return(diag(lr.cov.25) - 2*rowMeans(lr.cov.25) + mean(lr.cov.24)  )})
+  
+  
+  lr.P.Gamma.1.month = lapply(1:12, function(m) {
+    
+    start = 21; end = 116
+    
+    lr.cov.24 = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                  function(j){if(j >= 2){
+                                    (cov.1.list[[m]][[j]][start:end,start:end]+t(cov.1.list[[m]][[j]][start:end,start:end]))*(1-(j-1)/(max.lag[m,2]+1))
+                                  }else{cov.1.list[[m]][[j]][start:end,start:end]} 
+                                  }))
+    start = 21; end = 117
+    
+    lr.cov.25 = Reduce(`+`,lapply(1:(max.lag[m,2]+1),  
+                                  function(j){if(j >= 2){
+                                    (cov.1.list[[m]][[j]][start:end,start:end]+t(cov.1.list[[m]][[j]][start:end,start:end]))*(1-(j-1)/(max.lag[m,2]+1))
+                                  }else{cov.1.list[[m]][[j]][start:end,start:end]} 
+                                  }))
+    
+    return(diag(lr.cov.25) - rowMeans(lr.cov.25) - colMeans(lr.cov.25) + mean(lr.cov.25)  )})
+  
+  
+  P.Gamma.lr = lapply(1:12, function(m) { sample.2  = s.24h.part2 %>% filter(MONTH %in% month.name[m]) |> dplyr::select(4:dim(s.24h.part2)[2])
+                                          sample.2  = sample.2[rowSums(is.na(sample.2)) == 0,]
+                                          sample.1 = s.24h.part1 %>% filter(MONTH %in% month.name[m])|> dplyr::select(4:dim(s.24h.part1)[2])
+                                          sample.1 = sample.1[rowSums(is.na(sample.1)) == 0,]                                     
+  return(lr.P.Gamma.1.month[[m]] + dim(sample.1)[1] / dim(sample.2)[1] * lr.P.Gamma.2.month[[m]])})         ##  
+                                                                                                            ##
+ #############################################################################################################               
+ ## Dependent Multiplier Bootstrap on non centered difference function for each month ########################   
+ #############################################################################################################  
+  set.seed(2004)                                                                                            ##
+  q.list = q.month(d.24h.part1, d.24h.part2, Bandwidths, est, P.Gamma.lr,                                   ##
+                   from = 1, to = 12, alpha = rep(0.95,12), B = 10000, depend = T, int = T)                 ##
+                                                                                                            ##
+  file = paste0("weather temperature/trend analysis/relocation results/dense_",station[[k]],"_P_quantile_",data.example[[k]],".rds")
+  saveRDS(q.list, file = file)                                                                              ##          
+                                                                                                            ##
+  # Skip:                                                                                                   
+  #q.list = readRDS(paste0("weather temperature/trend analysis/relocation results/dense_",station[[k]],"_P_quantile_",data.example[[k]],".rds"))                                                                                                      
+  
+  delta.conf = CB(d.24h.part1, est, P.Gamma.lr, q.list[1,])                                                 ##
+  file = paste0("weather temperature/trend analysis/relocation results/dense_",station[[k]],"_CB_centered_delta_",data.example[[k]],".rds")
+  saveRDS(delta.conf, file = file)                                                                          ##
+                                                                                                            ##
+                                                                                                            ##
+                                                                                                            ## 
+plan(sequential)                                                                                            ##                                                                             
 ##############################################################################################################
 ##############################################################################################################
 ##############################################################################################################
