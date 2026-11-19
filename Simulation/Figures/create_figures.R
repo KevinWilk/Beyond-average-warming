@@ -39,7 +39,7 @@ source("Simulation/function_evaluation.R")
 ###########################################################################################################################
 ###########################################################################################################################
 #########                                                                                ##################################
-######### Simulation illustration for n = 25, p = 25 and \tilde{n} = 30, \tilde{p} = 100 ##################################
+######### Simulation illustration for n = 25, p = 25 and n_d = 30, p_d = 100             ##################################
 #########                                                                                ##################################
 ###########################################################################################################################
 ###########################################################################################################################
@@ -99,7 +99,7 @@ Y.d.mean = data.frame(obs.d, Y.d = rowMeans(Y.d))###############################
 
 #### Bandwidth for source sample and target ##########################################################################
 bandwidth  = readRDS(paste0("Simulation/optimal bandwidth/Results/delta_constant_",delta_constant,"_Bandwidth.rds"))##
-bw.d  = bandwidth[2,2]; bw.delta  = bandwidth[4,2] ###################################################################
+bw.d  = bandwidth[2,1]; bw.delta  = bandwidth[4,1] ###################################################################
 ######################################################################################################################
 
 
@@ -165,7 +165,7 @@ ggplot() +
         axis.text.y  = element_text(size = 24))+
   ylim(-10,10)+
   labs(y=NULL, x = NULL, 
-       subtitle = bquote("Simulation setup of " * mu^{"[d]"} * ": "*tilde(n)*" = " * .(nd) * ", "*tilde(p)*" = " * .(pd))) 
+       subtitle = bquote("Simulation setup of " * mu^{"[d]"} * ": "* m *" = " * .(nd) * ", "* p[d] *" =" * .(pd))) 
 
 ggsave(paste0("Simulation/Figures/constant ",delta_constant," simulation setup dense.png"), width = 18, height = 17, units = "cm", dpi = 300)
 
@@ -240,12 +240,12 @@ lag_Gamma_d_100_sample = readRDS(paste0("Simulation/optimal bandwidth/Results/",
 
 
 
-bw  = c(c(t(lag_Gamma_s_25_sample[[11]])),c(t(lag_Gamma_s_50_sample[[11]])),c(t(lag_Gamma_s_75_sample[[11]])),c(t(lag_Gamma_d_100_sample[[11]])))
+bw  = c(c(t(lag_Gamma_s_25_sample[[12]])),c(t(lag_Gamma_s_50_sample[[12]])),c(t(lag_Gamma_s_75_sample[[12]])),c(t(lag_Gamma_d_100_sample[[12]])))
 
-lag = rep(rep(0:4, each = 1000), times = 4)
+lag = rep(rep(0:3, each = 1000), times = 4)
 
 
-results.hv = data.frame(bandwidth = bw, lag = factor(lag), p = factor(rep(rep(c(P,pd)), each = 5000)))
+results.hv = data.frame(bandwidth = bw, lag = factor(lag), p = factor(rep(rep(c(P,pd)), each = 4000)))
 
 ggplot(results.hv |> filter(lag %in% 0:3), aes(x = lag, y = bandwidth, color = p)) +
   geom_boxplot(position = position_dodge(width = 0.8), size = 1) +
@@ -309,7 +309,7 @@ delta_constant = FALSE    ################
 
 # Setting Parameters 
 C_inv  = 1.2
-n      = 400
+n      = 600
 nd     = n * C_inv
 p      = 25
 pd     = 100
@@ -317,13 +317,13 @@ p.eval = 75
 
 
 #Gernate data sets
-if(delta_constant){set.seed(1144)}else{set.seed(1169)}
+if(delta_constant){set.seed(1144)}else{set.seed(1139)} #1150
 x.s.design = (1:p - 0.5)/p
 Y.s        = t(mu(x.s.design) + 
                  t(sim.d.OU(n, t = x.s.design,rho_B = 0.5,tau = 0,sigma = 4)) + 
                  matrix(rnorm(length(x.s.design)*n, 0, 0.1),length(x.s.design), n))
 
-if(delta_constant){set.seed(1148)}else{set.seed(1179)}
+if(delta_constant){set.seed(1148)}else{set.seed(1149)}
 xd.design = (1:pd - 0.5)/pd
 Y.d       = t(mu_d(xd.design,delta_constant) + 
                 t(sim.d.OU(nd, t = xd.design,rho_B = 0.5,tau = 0,sigma = 4)) + 
@@ -351,8 +351,6 @@ Gamma.s.part2 = Reduce(`+`,future_lapply(1:3, function(k) {
   lag.Gamma.s 
 }))
 
-plan(sequential)
-
 
 Gamma.s   = Gamma.s + Gamma.s.part2
 P.Gamma.s = diag(Gamma.s) - rowMeans(Gamma.s) - colMeans(Gamma.s) + mean(Gamma.s) 
@@ -362,11 +360,6 @@ P.Gamma.s = diag(Gamma.s) - rowMeans(Gamma.s) - colMeans(Gamma.s) + mean(Gamma.s
 wd      = readRDS(paste0("Simulation/weights/pd 100 constant ",delta_constant,"/full_w_lag0_",n,".rds"))
 Gamma.d = eval.weights(wd,observation.transformation(Y.d,grid.type = "less"))
 
-
-# Optional: For parallelizing computations ###############
-options(future.globals.maxSize = 20 * 1024^3)           ##  
-plan(multisession, workers = future::availableCores()-2)##
-
 Gamma.d.part2 = Reduce(`+`,future_lapply(1:3, function(k) {
   
   wd.lag = readRDS(paste0("Simulation/weights/pd 100 constant ",delta_constant,"/full_w_lag",k,"_",n,".rds"))
@@ -375,9 +368,6 @@ Gamma.d.part2 = Reduce(`+`,future_lapply(1:3, function(k) {
   
   lag.Gamma.d 
 }))
-
-plan(sequential)
-
 
 Gamma.d   = Gamma.d + Gamma.d.part2
 P.Gamma.d = diag(Gamma.d) - rowMeans(Gamma.d) - colMeans(Gamma.d) + mean(Gamma.d) 
@@ -390,33 +380,37 @@ P.Gamma = P.Gamma.s     + n/nd* P.Gamma.d           #
 
 rm(w,wd,Gamma.s,Gamma.d, Gamma.s.part2, Gamma.d.part2, P.Gamma.s, P.Gamma.d)
 
-# Mean and Difference Estimation #
-bandwidth  = readRDS(paste0("Simulation/optimal bandwidth/Results/delta_constant_",delta_constant,"_Bandwidth.rds"))
-estimation = est.results(Y.s,Y.d,bandwidth[c(2,4),11], p.eval = p.eval)
 
+##################################  
+# Mean and Difference Estimation #
+##################################
+
+# bandwidths from 5-Fold hv-block cross validation 
+h.d.seq  = seq(0.04, 1, 0.01)
+bw.d     = kfold.cv(Y.d, h.d.seq, K = 5, gap = 5, m = 2, R = 5, parallel = T, norm = "L2-norm")
+w.d      = locPolWeights(x = (1:ncol(Y.d) - 0.5)/ncol(Y.d), bw = bw.d, deg = 2, xeval= (1:ncol(Y.s) - 0.5)/ncol(Y.s), kernel=EpaK)$locWeig
+residual = t(t(Y.s) - c(w.d %*% apply(Y.d,2,mean)))
+h.s.seq  = seq(max(0.06,3/p), 1, 0.01)
+bw.s     = kfold.cv(residual, h.s.seq, K = 5, gap = 5, m = 2, R = 5, parallel = T, norm = "L2-norm")
+est.cv   = est.results(Y.s,Y.d, c(bw.d,bw.s), p.eval = p.eval)  
 
 
 #################################
 # Applying Multiplier Bootstrap #
 #################################
 
-# Optional: For parallelizing computations ###############
-options(future.globals.maxSize = 20 * 1024^3)           ##  
-plan(multisession, workers = future::availableCores()-2)##
+dep.MB.res        = q.MB(Y.s, Y.d, est.cv$sparse, est.cv$dense, Gamma, (1:p.eval - 0.5)/p.eval, c(bw.d,bw.s), alpha = 0.95, B = 1000, depend = T, int = F)
+ind.MB.res        = q.MB(Y.s, Y.d, est.cv$sparse, est.cv$dense, Gamma, (1:p.eval - 0.5)/p.eval, c(bw.d,bw.s), alpha = 0.95, B = 1000, depend = F, int = F)
 
-dep.MB.res        = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = T, int = F)
-ind.MB.res        = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = F, int = F)
-
-dep.MB.res.center = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, P.Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = T, int = T)
-ind.MB.res.center = q.MB(Y.s, Y.d, estimation$sparse, estimation$dense, P.Gamma, (1:p.eval)/p.eval, bandwidth[c(2,4),11], alpha = 0.95, B = 1000, depend = F, int = T)
+dep.MB.res.center = q.MB(Y.s, Y.d, est.cv$sparse, est.cv$dense, P.Gamma, (1:p.eval - 0.5)/p.eval, c(bw.d,bw.s), alpha = 0.95, B = 1000, depend = T, int = T)
+ind.MB.res.center = q.MB(Y.s, Y.d, est.cv$sparse, est.cv$dense, P.Gamma, (1:p.eval - 0.5)/p.eval, c(bw.d,bw.s), alpha = 0.95, B = 1000, depend = F, int = T)
 
 plan(sequential)
 
-delta.true         = delta((1:p.eval-0.5)/p.eval, constant = delta_constant)  
-delta.est          = estimation$delta$ESTIMATE 
-delta.centered     = delta((1:p.eval-0.5)/p.eval, constant = delta_constant) - integrate(function(x){delta(x,constant = delta_constant)},0,1)$value 
-delta.centered.est = estimation$delta$ESTIMATE - estimation$delta_int$ESTIMATE
-
+delta.true            = delta((1:p.eval-0.5)/p.eval, constant = delta_constant)  
+delta.est             = est.cv$delta$ESTIMATE 
+delta.centered        = delta((1:p.eval-0.5)/p.eval, constant = delta_constant) - integrate(function(x){delta(x,constant = delta_constant)},0,1)$value 
+delta.centered.est    = est.cv$delta$ESTIMATE - est.cv$delta_int$ESTIMATE
 delta.res.df = data.frame(x = (1:p.eval-0.5)/p.eval, true.val = delta.true, est.val = delta.est, true.val.center = delta.centered, est.val.center = delta.centered.est)
 
 KI.dep = data.frame(x = (1:p.eval-0.5)/p.eval, 
@@ -443,9 +437,9 @@ ggplot() +
   geom_line(aes(x, est.val, colour = "hat Difference"), data = delta.res.df, lty = 2, size = 1.2) +
   geom_line(aes(x, true.val, colour = "Difference"), data = delta.res.df, lty = 1, size = 1) +
   
-  scale_y_continuous(breaks = c(0,1.25,2.5), limits = c(-0.8,2.8)) +
+  scale_y_continuous(breaks = c(0,1.25,2.5), limits = c(-0.8,3)) +
   
-  labs(subtitle = bquote("n = " * .(n) * ", p = " * .(p) *", " *tilde(n)*" = " * .(nd) * " and "*tilde(p)*" = " * .(pd)),
+  labs(subtitle = bquote("n = " * .(n) * ", p = " * .(p) *", " * m *" = " * .(nd) * " and "* p[d] *" = " * .(pd)),
        x = NULL,
        y = NULL) +
   
@@ -490,9 +484,9 @@ ggplot() +
   geom_line(aes(x, est.val.center, colour = "hat Difference"), data = delta.res.df, lty = 2, size = 1.2) +
   geom_line(aes(x, true.val.center, colour = "Difference"), data = delta.res.df, lty = 1, size = 1) +
   
-  scale_y_continuous(breaks = c(0,1.25,2.5), limits = c(-0.8,2.8)) +
+  scale_y_continuous(breaks = c(0,1.25,2.5), limits = c(-1.1,3)) +
   
-  labs(subtitle = bquote("n = " * .(n) * ", p = " * .(p) *", " *tilde(n)*" = " * .(nd) * " and "*tilde(p)*" = " * .(pd)),
+  labs(subtitle = bquote("n = " * .(n) * ", p = " * .(p) *", " * m *" = " * .(nd) * " and "* p[d] *" = " * .(pd)),
        x = NULL,
        y = NULL) +
   
@@ -554,7 +548,7 @@ ggsave("Simulation/Figures/Compare_CB_centered.png", width = 20, height = 17, un
 
 
 # Parameters
-N   = c(25,50,75,100,150,200,250,300,350,400)
+N   = c(25,50,100,200,300,400,500,600,700,800,900,1000)
 P   = c(25,50,75)
 Rep = 1000
 
@@ -576,6 +570,7 @@ if(delta_constant){                  #####
 
 
 
+
 ####################
 # Under H0 and H1 ##
 ####################
@@ -588,9 +583,9 @@ for(i in 1:length(P)){
   dep.coverage.95  = c()
   dep.coverage.99  = c()
   
-  for(j in 1:10){
+  for(j in 1:length(N)){
     
-    dep.c = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage_list.rds"))
+    dep.c = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_results.rds"))$coverage.L2
     
     dep.c90 = dep.c$q90
     dep.c95 = dep.c$q95
@@ -603,9 +598,9 @@ for(i in 1:length(P)){
   }
   
   
-  for(j in 1:10){
+  for(j in 1:length(N)){
     
-    dep.c = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_coverage_list.rds"))
+    dep.c = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_results.rds"))$coverage.L2
     
     dep.c90 = dep.c$q90
     dep.c95 = dep.c$q95
@@ -634,16 +629,16 @@ dep.endpoints      = dep.coverage.df |> group_by(p,quantile.est,process) |> filt
 
 ggplot() + 
   geom_line( aes(x = n, y = emp.coverage, colour = quantile.est, linetype = type), data = dep.coverage.df, size = 1.6) +
-  geom_text(data = dep.endpoints, aes(x = 400, y = emp.coverage, label = paste0(round(emp.coverage*100, digits = 0),"%"), colour = quantile.est), hjust = -0.15, size = 6, show.legend = FALSE) +
+  geom_text(data = dep.endpoints, aes(x = 1000, y = emp.coverage, label = paste0(round(emp.coverage*100, digits = 0),"%"), colour = quantile.est), hjust = -0.15, size = 6, show.legend = FALSE) +
   
-  scale_colour_manual(name = expression(1-alpha),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
+  scale_colour_manual(name = expression(1-tau),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
   
   theme(plot.title = element_text(size = 25),
         plot.subtitle = element_text(size = 25),
         legend.text = element_text(size = 25),
-        strip.text = element_text(size = 25),
+        strip.text = element_text(   size = 25),
         plot.margin = margin(5.5, 27, 5.5, 5.5),     
-        legend.box.margin = margin(0, 3, 0, 0),     
+        legend.box.margin = margin(0, 2, 0, 0),     
         legend.title = element_text(size = 25),
         axis.title.x = element_text(size = 25),     
         axis.title.y = element_text(size = 25),
@@ -651,11 +646,11 @@ ggplot() +
         axis.text.y  = element_text(size = 25),
         
         legend.key.width  = unit(1.1, "cm")) +
-  labs(linetype = expression("with "*{hat(q)^{i}}[1-alpha])) +
+  labs(linetype = expression("with "*{hat(q)^{i}}[1-tau])) +
   scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1), limits = c(0,1)) +
-  scale_x_continuous(breaks = c(0,200,400), limits = c(0,510)) +
-  labs(y = "empirical coverage", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100")) +
-  facet_grid(. ~ process + p, labeller = labeller( process = as_labeller(c("not centered" = "delta[n]-delta","centered"     = "Delta[n]-Delta"), label_parsed)))
+  scale_x_continuous(breaks = c(0,500,1000), limits = c(0,1210)) +
+  labs(y = "empirical coverage", x = "n", title = bquote( m * " = 1.2 n  and  " * p[d] * " = 100")) +
+  facet_grid(. ~ process + p, labeller = labeller( process = as_labeller(c("not centered" = "hat(delta)[paste(n, ',', m)]-delta","centered"     = "hat(Delta)[paste(n, ',', m)]-Delta"), label_parsed)))
 
 
 ggsave(paste0("Simulation/Figures/coverage rate ",name,".png"), width = 50, height = 18, units = "cm", dpi = 300)
@@ -677,7 +672,7 @@ folder2 = "H1 (centered)"          #####
 
 
 # Parameters
-N   = c(25,50,75,100,150,200,250,300,350,400)
+N   = c(25,50,100,200,300,400,500,600,700,800,900,1000)
 
 dep.value.p = c()
 
@@ -688,9 +683,9 @@ for(i in 1:length(P)){
   dep.power.99  = c()
   
   
-  for(j in 1:10){
+  for(j in 1:length(N)){
     
-    dep.p = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power.rds"))
+    dep.p = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_results.rds"))$power.L2
     
     dep.p90 = dep.p$p90
     dep.p95 = dep.p$p95
@@ -714,8 +709,6 @@ dep.power.df.part1    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3
 
 
 
-N   = c(25,75,100,150,200,250,300,350,400)
-
 dep.value.p = c()
 
 for(i in 1:length(P)){
@@ -725,9 +718,9 @@ for(i in 1:length(P)){
   dep.power.99  = c()
   
   
-  for(j in 1:9){
+  for(j in 1:length(N)){
     
-    dep.p = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_power.rds"))
+    dep.p = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_results.rds"))$power.L2
     
     dep.p90 = dep.p$p90
     dep.p95 = dep.p$p95
@@ -757,10 +750,115 @@ dep.power.df       = rbind(dep.power.df.part1,dep.power.df.part2)
 
 ggplot() + 
   geom_line( aes(x = n, y = emp.power, colour = quantile.est, linetype = type), data = dep.power.df, size = 1.6) +
-  geom_text(data = dep.endpoints, aes(x = 400, y = position, label = paste0(round(emp.power*100, digits = 0),"%"), colour = quantile.est), hjust = -0.15, size = 6, show.legend = FALSE) +
+  #geom_text(data = dep.endpoints, aes(x = 1000, y = position, label = paste0(round(emp.power*100, digits = 0),"%"), colour = quantile.est), hjust = -0.15, size = 6, show.legend = FALSE) +
   
-  scale_colour_manual(name = expression(1-alpha),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
+  scale_colour_manual(name = expression(1-tau),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
   
+  theme(plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 25),
+        legend.text = element_text(size = 25),
+        strip.text = element_text(size = 25),
+        plot.margin = margin(5.5, 27, 5.5, 5.5),     
+        legend.box.margin = margin(0, 3, 0, 0),     
+        legend.title = element_text(size = 25),
+        axis.title.x = element_text(size = 25),     
+        axis.title.y = element_text(size = 25),
+        axis.text.x  = element_text(size = 25),     
+        axis.text.y  = element_text(size = 25),
+        legend.key.width  = unit(1.1, "cm")) +
+  
+  labs(linetype = expression("with "*{hat(q)^{i}}[1-tau])) +
+  
+  scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1), limits = c(0,1)) +
+  scale_x_continuous(breaks = c(0,500,1000), limits = c(0,1210)) +
+  
+  labs(y = "empirical power", x = "n", title = bquote( m * " = 1.2 n  and  " * p[d] * " = 100")) +
+  
+  facet_grid(. ~ process + p, labeller = labeller( process = as_labeller(c("not centered" = "hat(delta)[paste(n, ',', m)]-delta","centered"     = "hat(Delta)[paste(n, ',', m)]-Delta"), label_parsed)))
+
+
+
+ggsave(paste0("Simulation/Figures/power ",name,".png"), width = 50, height = 18, units = "cm", dpi = 300)
+
+
+
+
+
+
+
+
+
+
+
+
+####################################################################################################################################################
+####################################################################################################################################################
+####                                                                                                                                ################
+####  Illustation of averaged sup-norm error of residual based estimator and estimator by seperatly estimating both mean functions  ################
+####                                                                                                                                ################
+####################################################################################################################################################
+####################################################################################################################################################
+
+
+# Parameters
+N   = c(25,50,100,200,300,400,500,600,700,800,900,1000)
+P   = c(25,50,75)
+Rep = 1000
+
+
+delta_constant = FALSE
+scenario3      = TRUE
+
+##########################################
+if(delta_constant){                  #####
+  name    = "H0"                     #####
+  folder  = "H0 (centered)"          #####
+    ######################################
+}else{                               #####
+  name    = "H1"                     #####
+  folder  = "H1 (centered)"          #####
+}                                    #####
+    ######################################
+if(scenario3){                       #####
+    folder = "Scenario 3 (centered)" #####
+}                                    #####
+##########################################
+
+####################
+# Under H0 and H1 ##
+####################
+
+error.seperat  = c()
+error.residual = c()
+
+for(i in 1:length(P)){
+
+  
+  for(j in 1:length(N)){
+    
+    list = readRDS(paste0("Simulation/Comparison/",folder,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_result.rds"))$sup.error
+    
+    residual = mean(list$residual.est)
+    seperat  = mean(list$seperat.est)
+
+    error.residual = c(error.residual,residual)
+    error.seperat  = c(error.seperat,seperat)
+
+  }
+  
+}
+
+
+
+sup.error.df    = data.frame(   p = rep(rep(paste0("p = ", P), each = length(N)),times = 2) ,
+                                n = rep(N, times = length(P)), 
+                                sup.error = rep(c("residual","seperate"), each = length(N)*length(P)), 
+                                value     = c(error.residual, error.seperat))
+
+
+ggplot() + 
+  geom_line( aes(x = n, y = value, colour = sup.error, linetype = sup.error), data = sup.error.df, size = 1.6) +
+
   theme(plot.title = element_text(size = 25),
         plot.subtitle = element_text(size = 25),
         legend.text = element_text(size = 25),
@@ -774,19 +872,140 @@ ggplot() +
         axis.text.y  = element_text(size = 25),
         
         legend.key.width  = unit(1.1, "cm")) +
-  labs(linetype = expression("with "*{hat(q)^{i}}[1-alpha])) +
+  
+  scale_y_continuous(breaks = c(0,0.4,0.8), limits = c(0, 1.7)) +
+  scale_x_continuous(breaks = c(0,500,1000), limits = c(0,1000)) +
+  
+  labs(y = "sup.error", x = "n", title = bquote( m * " = 1.2 n  and  " * p[d] * " = 100"), linetype = "Estimator:") +
+  
+  scale_colour_manual(name = "Estimator:",
+                      values = c("residual" = "#F8766D", "seperate" = "#00BFC4"), 
+                      labels = c("residual" = expression(hat(delta)["n,m"]),
+                                 "seperate" = expression(bar(delta)["n,m"]))) +
+  
+  facet_grid(. ~ p)
+
+
+
+
+
+
+###########################################################################################################
+###########################################################################################################
+####                                                                        ###############################
+####  Supplement: Illustation of coverage and power with scaled bandwidths  ###############################
+####                                                                        ###############################
+###########################################################################################################
+###########################################################################################################
+
+
+# Parameters
+N   = c(25,50,100,200,300,400,500,600,700,800,900,1000)
+P   = c(25,50,75)
+Rep = 1000
+
+
+delta_constant = FALSE
+
+##########################################
+if(delta_constant){                  #####
+  name    = "H0"                     #####
+  folder1 = "H0 (not centered)"      #####
+  folder2 = "H0 (centered)"          #####
+    ######################################
+}else{                               #####
+  name    = "H1"                     #####
+  folder1 = "H1 (not centered)"      #####
+  folder2 = "H1 (centered)"          #####
+}                                    #####
+##########################################
+
+
+
+
+####################
+# Under H0 and H1 ##
+####################
+
+dep.value.c = c()
+
+for(i in 1:length(P)){
+  
+  dep.coverage.90  = c()
+  dep.coverage.95  = c()
+  dep.coverage.99  = c()
+  
+  for(j in 1:length(N)){
+    
+    dep.c = readRDS(paste0("Simulation/Coverage and power/",folder1,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_results.rds"))$coverage.scaleL2
+    
+    dep.c90 = dep.c$q90
+    dep.c95 = dep.c$q95
+    dep.c99 = dep.c$q99
+    
+    dep.coverage.90  = c(dep.coverage.90,dep.c90)
+    dep.coverage.95  = c(dep.coverage.95,dep.c95)
+    dep.coverage.99  = c(dep.coverage.99,dep.c99)
+    
+  }
+  
+  
+  for(j in 1:length(N)){
+    
+    dep.c = readRDS(paste0("Simulation/Coverage and power/",folder2,"/p ",P[i],"/dep_",N[j],"_rep_",Rep,"_results.rds"))$coverage.scaleL2
+    
+    dep.c90 = dep.c$q90
+    dep.c95 = dep.c$q95
+    dep.c99 = dep.c$q99
+    
+    dep.coverage.90  = c(dep.coverage.90,dep.c90)
+    dep.coverage.95  = c(dep.coverage.95,dep.c95)
+    dep.coverage.99  = c(dep.coverage.99,dep.c99)
+    
+  }
+  
+  dep.value.c = c(dep.value.c,dep.coverage.90,dep.coverage.95,dep.coverage.99)
+  
+}
+
+
+
+dep.coverage.df    = data.frame(p = rep(paste0("p = ", P), each = length(N)*3*2) ,
+                                n = rep(N, times = length(P)*3*2), 
+                                quantile.est = rep(c("90%","95%","99%"), each = length(N)*2), 
+                                emp.coverage = dep.value.c, 
+                                type = "i = DMB", 
+                                process = factor(rep(c("not centered", "centered"), each = length(N)),levels = c("not centered", "centered")) )
+
+dep.endpoints      = dep.coverage.df |> group_by(p,quantile.est,process) |> filter(emp.coverage == max(emp.coverage))
+
+ggplot() + 
+  geom_line( aes(x = n, y = emp.coverage, colour = quantile.est, linetype = type), data = dep.coverage.df, size = 1.6) +
+  geom_text(data = dep.endpoints, aes(x = 1000, y = emp.coverage, label = paste0(round(emp.coverage*100, digits = 0),"%"), colour = quantile.est), hjust = -0.15, size = 6, show.legend = FALSE) +
+  
+  scale_colour_manual(name = expression(1-tau),values = c("90%" = "#F8766D", "95%" = "#7CAE00", "99%" = "#00BFC4") ) +
+  
+  theme(plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 25),
+        legend.text = element_text(size = 25),
+        strip.text = element_text(   size = 25),
+        plot.margin = margin(5.5, 27, 5.5, 5.5),     
+        legend.box.margin = margin(0, 2, 0, 0),     
+        legend.title = element_text(size = 25),
+        axis.title.x = element_text(size = 25),     
+        axis.title.y = element_text(size = 25),
+        axis.text.x  = element_text(size = 25),     
+        axis.text.y  = element_text(size = 25),
+        
+        legend.key.width  = unit(1.1, "cm")) +
+  labs(linetype = expression("with "*{hat(q)^{i}}[1-tau])) +
   scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8,1), limits = c(0,1)) +
-  scale_x_continuous(breaks = c(0,200,400), limits = c(0,510)) +
-  labs(y = "empirical power", x = "n", title = bquote(tilde(n)* " = 1.2 n  and  " *tilde(p)* " = 100")) +
-  facet_grid(. ~ process + p, labeller = labeller( process = as_labeller(c("not centered" = "delta[n]-delta","centered"     = "Delta[n]-Delta"), label_parsed)))
+  scale_x_continuous(breaks = c(0,500,1000), limits = c(0,1210)) +
+  labs(y = "empirical coverage", x = "n", title = bquote( m * " = 1.2 n  and  " * p[d] * " = 100")) +
+  facet_grid(. ~ process + p, labeller = labeller( process = as_labeller(c("not centered" = "hat(delta)[paste(n, ',', m)]-delta","centered"     = "hat(Delta)[paste(n, ',', m)]-Delta"), label_parsed)))
 
 
-
-ggsave(paste0("Simulation/Figures/power ",name,".png"), width = 50, height = 18, units = "cm", dpi = 300)
-
-
-
-
+ggsave(paste0("Simulation/Figures/scaled_coverage rate ",name,".png"), width = 50, height = 18, units = "cm", dpi = 300)
 
 
 
