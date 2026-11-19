@@ -38,8 +38,8 @@ bw.s_month = function(data.sparse,data.dense, h.seq){
     
     bw.dense      = round(readRDS(paste0("weather temperature/bandwidth selection/Results/bw_",data.example[[k]],".rds"))[1,m] * (34/24) , digits = 2)
     
-    bw.delta      = k.fold.hc.cv(sample = sample.sparse, h.seq = h.seq, deg = 2, diff = T, K = K.sparse, sample.dense, bw.dense) 
-    bw.sparse     = k.fold.hc.cv(sample = sample.sparse, h.seq = h.seq, deg = 2, K = K.sparse)  
+    bw.delta      = k.fold.hc.cv(sample = sample.sparse, h.seq = h.seq, deg = 2, diff = T, K = K.sparse, sample.dense, bw.dense, norm = "L2-norm") 
+    bw.sparse     = k.fold.hc.cv(sample = sample.sparse, h.seq = h.seq, deg = 2, K = K.sparse, norm = "L2-norm")  
     
 
     c(bw.dense,bw.delta,bw.sparse)
@@ -88,7 +88,7 @@ plan(sequential)
 
 
 ###############################################################################
-k = 1  # Change to: 1 (Berlin)                                               ##
+k = 4  # Change to: 1 (Berlin)                                               ##
 #                   2 (Frankfurt am Main)                                    ##
 #                   3 (Hamburg)                                              ##
 #                   4 (Munich)                                               ##
@@ -113,10 +113,10 @@ centered.delta.conf = readRDS(paste0("weather temperature/confidence bands/Resul
 
 
 labs.legend = c(
-  "res" = expression(hat(Delta)["145,25"]),
-  "25"  = expression(bar(Delta)["145,25"]),
-  "13"  = expression(bar(Delta)["145,13"]),
-  "9"   = expression(bar(Delta)["145,9"])
+  "res" = expression(hat(Delta)["n,m"]* " (p = 25)"),
+  "25"  = expression(bar(Delta)["n,m"]* " (p = 25)"),
+  "13"  = expression(bar(Delta)["n,m"]* " (p = 13)"),
+  "9"   = expression(bar(Delta)["n,m"]* " (p = 9)")
 )
 
 
@@ -124,9 +124,9 @@ ggplot() +
   labs(x = "Time", y = "Temperature in °C") +
   geom_ribbon(aes(x = TIME, ymin = LO, ymax = UP), data = centered.delta.conf,  fill  = "grey6",  col = NA, alpha = 0.3,size = 0.5)+
   
-  geom_line(aes(x = TIME, y = centered, colour = "25" , linetype = "25" ), data = est$delta_compare,    size = 1, show.legend = T) +
-  geom_line(aes(x = TIME, y = centered, colour = "13" , linetype = "13" ), data = est.2h$delta_compare, size = 1, show.legend = T) +
-  geom_line(aes(x = TIME, y = centered, colour = "9"  , linetype = "9"  ), data = est.3h$delta_compare, size = 1, show.legend = T) +
+  geom_line(aes(x = TIME, y = centered, colour = "25" , linetype = "25" ), data = est$delta.compare,    size = 1, show.legend = T) +
+  geom_line(aes(x = TIME, y = centered, colour = "13" , linetype = "13" ), data = est.2h$delta.compare, size = 1, show.legend = T) +
+  geom_line(aes(x = TIME, y = centered, colour = "9"  , linetype = "9"  ), data = est.3h$delta.compare, size = 1, show.legend = T) +
   geom_line(aes(x = TIME, y = centered, colour = "res", linetype = "res"), data = est$delta,            size = 1, show.legend = T) +
   
   scale_colour_manual(expression("Estimators:"), 
@@ -167,19 +167,19 @@ count.3h = 0
 
 for(m in 1:12){
   
-  compare = est$delta_compare   |> filter(MONTH == month.name[m]) |> select(centered)
+  compare = est$delta.compare   |> filter(MONTH == month.name[m]) |> select(centered)
   UP      = centered.delta.conf |> filter(MONTH == month.name[m]) |> select(UP)
   LOW     = centered.delta.conf |> filter(MONTH == month.name[m]) |> select(LO)
   p25 = bind_cols(compare, LOW, UP) |> mutate(between = LO <= centered & centered <= UP)
   if(any(p25$between == F)){count.h = count.h + 1}
   
-  compare = est.2h$delta_compare   |> filter(MONTH == month.name[m]) |> select(centered)
+  compare = est.2h$delta.compare   |> filter(MONTH == month.name[m]) |> select(centered)
   UP      = centered.delta.conf |> filter(MONTH == month.name[m]) |> select(UP)
   LOW     = centered.delta.conf |> filter(MONTH == month.name[m]) |> select(LO)
   p13 = bind_cols(compare, LOW, UP) |> mutate(between = LO <= centered & centered <= UP)
   if(any(p13$between == F)){count.2h = count.2h + 1}
   
-  compare = est.3h$delta_compare   |> filter(MONTH == month.name[m]) |> select(centered)
+  compare = est.3h$delta.compare   |> filter(MONTH == month.name[m]) |> select(centered)
   UP      = centered.delta.conf |> filter(MONTH == month.name[m]) |> select(UP)
   LOW     = centered.delta.conf |> filter(MONTH == month.name[m]) |> select(LO)
   p9 = bind_cols(compare, LOW, UP) |> mutate(between = LO <= centered & centered <= UP)
@@ -201,17 +201,17 @@ ggplot() +
 
   scale_colour_manual(expression("Estimators:"), 
                       values = c("25" = "red", "13" = "green", "9" = "purple"),
-                      labels = c("25"  = expression(hat(Delta)["145,25"]),
-                                 "13"  = expression(hat(Delta)["145,13"]),
-                                 "9"   = expression(hat(Delta)["145,9"])),
+                      labels = c("25"  = expression(hat(Delta)["n,m"]* " (p = 25)"),
+                                 "13" = expression(hat(Delta)["n,m"] * " (p = 13)"),
+                                 "9"  = expression(hat(Delta)["n,m"]* " (p = 9)")),
                       breaks = c("25","13","9")) +
   
   scale_linetype_manual(expression("Estimators:"),
                         values = c("25" = 2, "13" = 3, "9"  = 4),
-                        labels = c("25" = expression(hat(Delta)["145,25"]),
-                        "13" = expression(hat(Delta)["145,13"]),
-                        "9"  = expression(hat(Delta)["145,9"])),
-                        breaks = c("25", "13", "9")) +
+                        labels = c("25" = expression(hat(Delta)["n,m"]* " (p = 25)"),
+                                   "13" = expression(hat(Delta)["n,m"] * " (p = 13)"),
+                                    "9"  = expression(hat(Delta)["n,m"]* " (p = 9)")),
+                                    breaks = c("25", "13", "9")) +
   
   theme(plot.title = element_text(size =17),
         legend.text = element_text(size =16),
