@@ -56,41 +56,40 @@ pd = 100
 # Computing optimal bandwidth for p = 25, 50 and 75 #
 #####################################################
 
-#bw.optim.list = list()
-#bw.optim.list = matrix(NA, nrow = 30, ncol = length(N),
-#                       dimnames = list(c("dense.optim.100","dense.hv.100",
+bw.optim.list = list()
+bw.optim.list = matrix(NA, nrow = 30, ncol = length(N),
+                       dimnames = list(c("dense.optim.100","dense.hv.100",
                                          
-#                                         "delta.optim.25" ,"delta.hv.25",
-#                                         "delta.optim.50" ,"delta.hv.50",
-#                                         "delta.optim.75" ,"delta.hv.75",
+                                         "delta.optim.25" ,"delta.hv.25",
+                                         "delta.optim.50" ,"delta.hv.50",
+                                         "delta.optim.75" ,"delta.hv.75",
                                          
-#                                         "sparse.optim.25" ,"sparse.hv.25",
-#                                         "sparse.optim.50" ,"sparse.hv.50",
-#                                         "sparse.optim.75" ,"sparse.hv.75",
+                                         "sparse.optim.25" ,"sparse.hv.25",
+                                         "sparse.optim.50" ,"sparse.hv.50",
+                                         "sparse.optim.75" ,"sparse.hv.75",
                                          
-#                                         "EXTRA: delta.optim.15" ,"EXTRA: delta.hv.15",
-#                                         "EXTRA: sparse.optim.15" ,"EXTRA: sparse.hv.15",
+                                         "EXTRA: delta.optim.15" ,"EXTRA: delta.hv.15",
+                                         "EXTRA: sparse.optim.15" ,"EXTRA: sparse.hv.15",
                                          
-#                                         "EXTRA: delta.optim.16" ,"EXTRA: delta.hv.16",
-#                                         "EXTRA: sparse.optim.16" ,"EXTRA: sparse.hv.16",
+                                         "EXTRA: delta.optim.16" ,"EXTRA: delta.hv.16",
+                                         "EXTRA: sparse.optim.16" ,"EXTRA: sparse.hv.16",
                                          
-#                                         "EXTRA: delta.optim.18" ,"EXTRA: delta.hv.18",
-#                                         "EXTRA: sparse.optim.18" ,"EXTRA: sparse.hv.18",
+                                         "EXTRA: delta.optim.18" ,"EXTRA: delta.hv.18",
+                                         "EXTRA: sparse.optim.18" ,"EXTRA: sparse.hv.18",
                                          
-#                                         "EXTRA: delta.optim.20" ,"EXTRA: delta.hv.20",
-#                                         "EXTRA: sparse.optim.20" ,"EXTRA: sparse.hv.20"))) |> 
+                                         "EXTRA: delta.optim.20" ,"EXTRA: delta.hv.20",
+                                         "EXTRA: sparse.optim.20" ,"EXTRA: sparse.hv.20"))) |> 
   
-#                                                                      as.data.frame()
-#colnames(bw.optim.list) = N
+                                                                      as.data.frame()
+colnames(bw.optim.list) = N
 
 
-file = paste0("Simulation/optimal bandwidth/Results/delta_constant_",delta_constant,"_Bandwidth.rds")
-bw.optim.list = readRDS(file)
+
 
 
 # Optional: For parallelizing computations ####################
-options(future.globals.maxSize = 30 * 1024^3)                ##   
-plan(multisession, workers = 30) # MaRC3a: partition=normal  ##
+options(future.globals.maxSize = 64 * 1024^3)                ##   
+plan(multisession, workers = 60) # MaRC3a: partition=normal  ##
 ###############################################################
 
 for(i in 1:length(N)){
