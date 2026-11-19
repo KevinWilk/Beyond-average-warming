@@ -37,7 +37,7 @@ for(k in 1:4){
   
   
   ############################################################################
-  #k = 1  # Change to: 1 (Berlin)                                            #
+  #k = 1 # Change to: 1 (Berlin)                                            ##
   #                   2 (Frankfurt am Main)                                 ##
   #                   3 (Hamburg)                                           ##
   #                   4 (Munich)                                            ##
@@ -56,6 +56,8 @@ for(k in 1:4){
 
   # Loading bandwidths for mean and difference estimation
   Bandwidths = readRDS(paste0("weather temperature/bandwidth selection/Results/bw_",data.example[[k]],".rds"))
+  Bandwidths = Bandwidths * 0.75
+  Bandwidths[c(2,3),][Bandwidths[c(2,3),] < 0.06]  = 0.06
   
   # Mean and difference function estimation
   est = est.results(data.s.34h,data.d.34h,Bandwidths,from = 1,to = 12)
@@ -84,44 +86,22 @@ for(k in 1:4){
   ################################################################
   # Integral of delta test with construction of confidence bands #
   ################################################################
-
-  # Holm factors for global levels
-  if(k == 1){       alpha.list = 1 - (rep(0.05,12)/c(10, 5,  6, 12, 4,  3,  9, 11, 8, 1, 7, 2))
-  }else if(k == 2){ alpha.list = 1 - (rep(0.05,12)/c(8,  3,  6,  4, 5, 12, 10, 11, 7, 2, 9, 1))
-  }else if(k == 3){ alpha.list = 1 - (rep(0.05,12)/c(12, 11, 4, 10, 9,  3,  8,  7, 6, 1, 5, 2))
-  }else if(k == 4){ alpha.list = 1 - (rep(0.05,12)/c(12, 2, 11, 10, 9,  8,  7,  6, 1, 5, 4, 3))}
     
   set.seed(2005)
   args.MB       = list(est = est, bandwidth = Bandwidths, B = 10000, dependent = T)
-  integral.test = test.int(data.s.34h, data.d.34h, unique(est$delta_int$ESTIMATE), lr.var.s.month, lr.var.d.month, from = 1, to = 12, test = "two-sided", alpha = alpha.list, approx = "MB", args.MB)
+  integral.test = test.int(data.s.24h, data.d.24h, unique(est$delta.int$ESTIMATE), lr.var.s.month, lr.var.d.month, from = 1, to = 12, test = "two-sided", alpha = rep(0.95,12), approx = "MB", args.MB)
   
-  file = paste0("weather temperature/confidence bands/Results/MB_quantile_integral_",data.example[[k]],".rds")
-  saveRDS(integral.test, file = file)
-
-  integral.conf       = tibble(TIME = rep(hms::as_hms(c(as.POSIXct("1970-01-01 00:00:00"),as.POSIXct("1970-01-01 23:59:59"))),times = 12))
-  integral.conf$UP    = rep(unlist(integral.test$confInterval)[seq(2,24,2)], each = 2)
-  integral.conf$LO    = rep(unlist(integral.test$confInterval)[seq(1,24,2)], each = 2)
-  integral.conf$MONTH =  factor(rep(month.name , each = 2), level = month.name)
-
-  file = paste0("weather temperature/confidence bands/Results/MB_CB_integral_",data.example[[k]],".rds")  
-  saveRDS(integral.conf, file = file) 
-
-
-    
-  set.seed(2005)
-  integral.test = test.int(data.s.34h, data.d.34h, unique(est$delta_int$ESTIMATE), lr.var.s.month, lr.var.d.month, from = 1, to = 12, test = "two-sided", alpha = alpha.list)
-
   file = paste0("weather temperature/confidence bands/Results/quantile_integral_",data.example[[k]],".rds")
   saveRDS(integral.test, file = file)
-    
+
   integral.conf       = tibble(TIME = rep(hms::as_hms(c(as.POSIXct("1970-01-01 00:00:00"),as.POSIXct("1970-01-01 23:59:59"))),times = 12))
   integral.conf$UP    = rep(unlist(integral.test$confInterval)[seq(2,24,2)], each = 2)
   integral.conf$LO    = rep(unlist(integral.test$confInterval)[seq(1,24,2)], each = 2)
   integral.conf$MONTH =  factor(rep(month.name , each = 2), level = month.name)
 
-  file = paste0("weather temperature/confidence bands/Results/CB_integral_",data.example[[k]],".rds")
-  saveRDS(integral.conf, file = file)
-  
+  file = paste0("weather temperature/confidence bands/Results/CB_integral_",data.example[[k]],".rds")  
+  saveRDS(integral.conf, file = file) 
+
   
   #####################################################################
   # Calculating diagonal of long run covariance matrix for each month #
@@ -147,20 +127,17 @@ for(k in 1:4){
                                         sample.sparse = sample.sparse[rowSums(is.na(sample.sparse)) == 0,]
                                         return(lr.Gamma.s.month[[m]] + dim(sample.sparse)[1] / dim(sample.dense)[1] * lr.Gamma.d.month[[m]])})
 
+  
+  
+  
+  
+  
   #####################################################################################
   # Dependent Multiplier Bootstrap on non centered difference function for each month #
   #####################################################################################
-
-    
-  # Holm factors for global levels
-  if(k == 1){       alpha.list = 1 - (rep(0.05,12)/c(2, 3, 4, 11, 12, 10,  8,  9, 6, 7, 5, 1))
-  }else if(k == 2){ alpha.list = 1 - (rep(0.05,12)/c(2, 4, 6, 12,  8, 11,  9, 10, 7, 1, 5, 3))
-  }else if(k == 3){ alpha.list = 1 - (rep(0.05,12)/c(2, 3, 6, 10,  9,  8, 11, 12, 7, 5, 4, 1))
-  }else if(k == 4){ alpha.list = 1 - (rep(0.05,12)/c(3, 1, 4,  9, 11, 12,  8, 10, 7, 6, 5, 2))}
-    
     
   set.seed(2005)
-  q.list = q.month(data.s.34h, data.d.34h, Bandwidths, est, lr.Gamma, from = 1, to = 12, alpha = alpha.list, B = 10000, depend = T, int = F, constant = unique(est$delta_int$ESTIMATE))
+  q.list = q.month(data.s.24h, data.d.24h, Bandwidths, est, lr.Gamma, from = 1, to = 12, alpha = rep(0.95,12), B = 10000, depend = T, int = F, constant = unique(est$delta.int$ESTIMATE))
   file = paste0("weather temperature/confidence bands/Results/quantile_",data.example[[k]],".rds")
   saveRDS(q.list, file = file) 
 
@@ -231,14 +208,8 @@ for(k in 1:4){
   # Dependent Multiplier Bootstrap on centered difference function for each month #
   #################################################################################
 
-  if(k == 1){       alpha.list = 1 - (rep(0.05,12)/c(5,  4, 12, 11, 10,  9,  8, 7, 2, 6, 3, 1))
-  }else if(k == 2){ alpha.list = 1 - (rep(0.05,12)/c(2,  4,  5, 12, 11, 10,  9, 8, 7, 1, 6, 3))
-  }else if(k == 3){ alpha.list = 1 - (rep(0.05,12)/c(4,  3,  6,  8, 12, 11, 10, 9, 7, 1, 2, 5))
-  }else if(k == 4){ alpha.list = 1 - (rep(0.05,12)/c(12, 1, 11, 10,  9,  8,  7, 6, 5, 4, 3, 2))}
-    
-    
   set.seed(2005)
-  q.P.list = q.month(data.s.34h, data.d.34h, Bandwidths, est, P.Gamma.lr, from = 1, to = 12, alpha = alpha.list, B = 10000, depend = T, int = T) 
+  q.P.list = q.month(data.s.24h, data.d.24h, Bandwidths, est, P.Gamma.lr, from = 1, to = 12, alpha = rep(0.95,12), B = 10000, depend = T, int = T) 
   file = paste0("weather temperature/confidence bands/Results/quantile_P_",data.example[[k]],".rds")
   saveRDS(q.P.list, file = file) 
   
