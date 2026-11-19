@@ -1,9 +1,17 @@
 {
     "sortOrder": [
         {
-            "columnIndex": 2,
+            "columnIndex": 1,
             "ascending": true
+        },
+        {
+            "columnIndex": 2,
+            "ascending": false
+        },
+        {
+            "columnIndex": 3,
+            "ascending": false
         }
     ],
-    "path": "C:/Users/wilk/Desktop/Paper R/Beyond-average-warming/Simulation/optimal bandwidth/Results"
+    "path": "C:/Users/wilk/Desktop/Paper R/Beyond-average-warming/weather temperature/trend analysis"
 }
