@@ -46,7 +46,7 @@ if(delta_constant){       ################
 
 # Setting Parameters 
 C_inv = 1.2
-N  = c(15,25,50,75,100,150,200,250,300,350,400)
+N  = c(25,50,100,200,300,400,500,600,700,800,900,1000)
 Nd = N * C_inv
 P  = c(25,50,75)
 pd = 100
@@ -56,43 +56,43 @@ pd = 100
 #####################################################
 
 
-bw.list.p.25   = matrix(NA, nrow = 11, ncol = length(N),
-                        dimnames = list(paste0("lag ", 0:10))) |> 
+bw.list.p.25   = matrix(NA, nrow = 4, ncol = length(N),
+                        dimnames = list(paste0("lag ", 0:3))) |> 
                                                               as.data.frame()
 colnames(bw.list.p.25) = N
 bw.sample.list.p.25   = list()
-bw.optim.list.p.25   = matrix(NA, nrow = 11, ncol = length(N),
-                              dimnames = list(paste0("lag ", 0:10))) |> 
+bw.optim.list.p.25   = matrix(NA, nrow = 4, ncol = length(N),
+                              dimnames = list(paste0("lag ", 0:3))) |> 
                                                               as.data.frame()
 colnames(bw.optim.list.p.25) = N
 
-bw.list.p.50   = matrix(NA, nrow = 11, ncol = length(N),
-                        dimnames = list(paste0("lag ", 0:10))) |> 
+bw.list.p.50   = matrix(NA, nrow = 4, ncol = length(N),
+                        dimnames = list(paste0("lag ", 0:3))) |> 
                                                               as.data.frame()
 colnames(bw.list.p.50) = N
 bw.sample.list.p.50   = list()
-bw.optim.list.p.50   = matrix(NA, nrow = 11, ncol = length(N),
-                              dimnames = list(paste0("lag ", 0:10))) |> 
+bw.optim.list.p.50   = matrix(NA, nrow = 4, ncol = length(N),
+                              dimnames = list(paste0("lag ", 0:3))) |> 
                                                               as.data.frame()
 colnames(bw.optim.list.p.50) = N
 
-bw.list.p.75   = matrix(NA, nrow = 11, ncol = length(N),
-                        dimnames = list(paste0("lag ", 0:10))) |> 
+bw.list.p.75   = matrix(NA, nrow = 4, ncol = length(N),
+                        dimnames = list(paste0("lag ", 0:3))) |> 
                                                               as.data.frame()
 colnames(bw.list.p.75) = N
 bw.sample.list.p.75   = list()
-bw.optim.list.p.75   = matrix(NA, nrow = 11, ncol = length(N),
-                              dimnames = list(paste0("lag ", 0:10))) |> 
+bw.optim.list.p.75   = matrix(NA, nrow = 4, ncol = length(N),
+                              dimnames = list(paste0("lag ", 0:3))) |> 
                                                               as.data.frame()
 colnames(bw.optim.list.p.75) = N
 
-bw.list.pd.100   = matrix(NA, nrow = 11, ncol = length(Nd),
-                          dimnames = list(paste0("lag ", 0:10))) |> 
+bw.list.pd.100   = matrix(NA, nrow = 4, ncol = length(Nd),
+                          dimnames = list(paste0("lag ", 0:3))) |> 
                                                               as.data.frame()
 colnames(bw.list.pd.100) = Nd
 bw.sample.list.pd.100   = list()
-bw.optim.list.pd.100   = matrix(NA, nrow = 11, ncol = length(Nd),
-                                dimnames = list(paste0("lag ", 0:10))) |> 
+bw.optim.list.pd.100   = matrix(NA, nrow = 4, ncol = length(Nd),
+                                dimnames = list(paste0("lag ", 0:3))) |> 
                                                               as.data.frame()
 colnames(bw.optim.list.pd.100) = Nd
 
@@ -117,30 +117,25 @@ file100.optim  = paste0("Simulation/optimal bandwidth/Results/",folder,"/lag_Gam
 
 # Optional: For parallelizing computations ####################
 options(future.globals.maxSize = 64 * 1024^3)                ##   
-plan(multisession, workers = 120) # MaRC3a: partition=mqtest ##
-#plan(multisession, workers = 60) # MaRC3a: partition=normal ##
+plan(multisession, workers = 60) # MaRC3a: partition=normal  ##
 ###############################################################
 
-for(i in 2:length(N)){
+for(i in 1:length(N)){
   
   print(paste0("Start: n = ",N[i]))
   
   h.seq              = lapply(1, function(l){seq(1, 3/P[1], -0.05)})[[1]]
-  bw.s.25.sample     = k.fold.hc.cv.cov(N = 1000, n = N[i], p = P[1], h.seq, K = 5, gap = 5, max.lag = 0, m = 1, w.parallel = T, 
-                                        func = mu)
+  bw.s.25.sample     = cv.sim.cov(N = 1000, n = N[i], p = P[1], h.seq, K = 5, gap = 5, R = 5, max.lag = 0, m = 1, w.parallel = T, func = mu)
   bw.s.25            = mean(bw.s.25.sample)
-  bw.s.lag.25.sample = k.fold.hc.cv.cov(N = 1000, n = N[i], p = P[1], h.seq, K = 5, gap = 5, max.lag = 4, m = 1, w.parallel = T, 
-                                        func = mu)
+  bw.s.lag.25.sample = cv.sim.cov(N = 1000, n = N[i], p = P[1], h.seq, K = 5, gap = 5, R = 5, max.lag = 3, m = 1, w.parallel = T, func = mu)
   bw.s.lag.25        = apply(bw.s.lag.25.sample,1,mean)
   
   bw.list.p.25[,i]         = round(c(bw.s.25,bw.s.lag.25), digits = 2)
   bw.sample.list.p.25[[i]] = rbind(bw.s.25.sample,bw.s.lag.25.sample)
   
   h.seq              = lapply(1, function(l){seq(1, 4/P[1], -0.01)})[[1]]
-  bw.s.25.optim      = h.optim.cov(N = 1000, n = N[i], p = P[1], p.eval = 75, h.seq, max.lag = 0,  m = 1, w.parallel = T, 
-                                   func = mu)
-  bw.s.lag.25.optim  = h.optim.cov(N = 1000, n = N[i], p = P[1], p.eval = 75, h.seq, max.lag = 4, m = 1, w.parallel = T, 
-                                   func = mu) 
+  bw.s.25.optim      = h.optim.cov(N = 1000, n = N[i], p = P[1], p.eval = 75, h.seq, max.lag = 0, m = 1, w.parallel = T, func = mu)
+  bw.s.lag.25.optim  = h.optim.cov(N = 1000, n = N[i], p = P[1], p.eval = 75, h.seq, max.lag = 3, m = 1, w.parallel = T, func = mu) 
   
   bw.optim.list.p.25[,i]   = c(bw.s.25.optim,bw.s.lag.25.optim)
   
@@ -153,21 +148,17 @@ for(i in 2:length(N)){
   
   
   h.seq              = lapply(1, function(l){seq(1, 3/P[2], -0.05)})[[1]]
-  bw.s.50.sample     = k.fold.hc.cv.cov(N = 1000, n = N[i], p = P[2], h.seq, K = 5, gap = 5, max.lag = 0, m = 1, w.parallel = T, 
-                                        func = mu)
+  bw.s.50.sample     = cv.sim.cov(N = 1000, n = N[i], p = P[2], h.seq, K = 5, gap = 5, R = 5, max.lag = 0, m = 1, w.parallel = T, func = mu)
   bw.s.50            = mean(bw.s.50.sample)
-  bw.s.lag.50.sample = k.fold.hc.cv.cov(N = 1000, n = N[i], p = P[2], h.seq, K = 5, gap = 5, max.lag = 4, m = 1, w.parallel = T, 
-                                        func = mu)
+  bw.s.lag.50.sample = cv.sim.cov(N = 1000, n = N[i], p = P[2], h.seq, K = 5, gap = 5, R = 5, max.lag = 3, m = 1, w.parallel = T, func = mu)
   bw.s.lag.50        = apply(bw.s.lag.50.sample,1,mean)
   
   bw.list.p.50[,i]         = c(bw.s.50,bw.s.lag.50)
   bw.sample.list.p.50[[i]] = rbind(bw.s.50.sample,bw.s.lag.50.sample)
   
   h.seq              = lapply(1, function(l){seq(1, 4.6/P[2], -0.01)})[[1]]
-  bw.s.50.optim      = h.optim.cov(N = 1000, n = N[i], p = P[2], p.eval = 75, h.seq, max.lag = 0,  m = 1, w.parallel = T, 
-                                   func = mu)
-  bw.s.lag.50.optim  = h.optim.cov(N = 1000, n = N[i], p = P[2], p.eval = 75, h.seq, max.lag = 4, m = 1, w.parallel = T, 
-                                   func = mu)
+  bw.s.50.optim      = h.optim.cov(N = 1000, n = N[i], p = P[2], p.eval = 75, h.seq, max.lag = 0, m = 1, w.parallel = T, func = mu)
+  bw.s.lag.50.optim  = h.optim.cov(N = 1000, n = N[i], p = P[2], p.eval = 75, h.seq, max.lag = 3, m = 1, w.parallel = T, func = mu)
   
   bw.optim.list.p.50[,i]   = c(bw.s.50.optim,bw.s.lag.50.optim)
   
@@ -177,24 +168,31 @@ for(i in 2:length(N)){
   
   print(paste0("done: p = ",P[2]))
   
-  
-  
+}
+
+plan(sequential)  
+
+
+
+# Optional: For parallelizing computations ####################
+options(future.globals.maxSize = 64 * 1024^3)                ##   
+plan(multisession, workers = 30)  # MaRC3a: partition=normal ##
+###############################################################
+
+for(i in 1:length(N)){
+    
   h.seq              = lapply(1, function(l){seq(1, 3/P[3], -0.05)})[[1]]
-  bw.s.75.sample     = k.fold.hc.cv.cov(N = 1000, n = N[i], p = P[3], h.seq, K = 5, gap = 5, max.lag = 0, m = 1, w.parallel = T, 
-                                        func = mu)
+  bw.s.75.sample     = cv.sim.cov(N = 1000, n = N[i], p = P[3], h.seq, K = 5, gap = 5, R = 5, max.lag = 0, m = 1, w.parallel = T, func = mu)
   bw.s.75            = mean(bw.s.75.sample)
-  bw.s.lag.75.sample = k.fold.hc.cv.cov(N = 1000, n = N[i], p = P[3], h.seq, K = 5, gap = 5, max.lag = 4, m = 1, w.parallel = T, 
-                                        func = mu)
+  bw.s.lag.75.sample = cv.sim.cov(N = 1000, n = N[i], p = P[3], h.seq, K = 5, gap = 5, R = 5, max.lag = 3, m = 1, w.parallel = T, func = mu)
   bw.s.lag.75        = apply(bw.s.lag.75.sample,1,mean)
   
   bw.list.p.75[,i]         = c(bw.s.75,bw.s.lag.75)
   bw.sample.list.p.75[[i]] = rbind(bw.s.75.sample,bw.s.lag.75.sample)
   
   h.seq              = lapply(1, function(l){seq(1, 4.6/P[3], -0.01)})[[1]]
-  bw.s.75.optim      = h.optim.cov(N = 1000, n = N[i], p = P[3], p.eval = 75, h.seq, max.lag = 0,  m = 1, w.parallel = T, 
-                                   func = mu)
-  bw.s.lag.75.optim  = h.optim.cov(N = 1000, n = N[i], p = P[3], p.eval = 75, h.seq, max.lag = 4, m = 1, w.parallel = T, 
-                                   func = mu)  
+  bw.s.75.optim      = h.optim.cov(N = 1000, n = N[i], p = P[3], p.eval = 75, h.seq, max.lag = 0, m = 1, w.parallel = T, func = mu)
+  bw.s.lag.75.optim  = h.optim.cov(N = 1000, n = N[i], p = P[3], p.eval = 75, h.seq, max.lag = 3, m = 1, w.parallel = T, func = mu)  
   
   bw.optim.list.p.75[,i]   = c(bw.s.75.optim,bw.s.lag.75.optim)
   
@@ -203,27 +201,34 @@ for(i in 2:length(N)){
   saveRDS(bw.optim.list.p.75,file75.optim)
   
   print(paste0("done: p = ",P[3]))
-  
-  
-  
+
+}
+
+
+
+plan(sequential)
+
+# Optional: For parallelizing computations ####################
+options(future.globals.maxSize = 64 * 1024^3)                ##   
+plan(multisession, workers = 15) # MaRC3a: partition=normal  ##
+###############################################################
+
+for(i in 1:length(N)){  
+    
   print(paste0("Start: nd = ",Nd[i]))
   
   h.seq              = lapply(1, function(l){seq(1, 3/pd, -0.05)})[[1]]
-  bw.d.100.sample     = k.fold.hc.cv.cov(N = 1000, n = Nd[i], p = pd, h.seq, K = 5, gap = 5, max.lag = 0, m = 1, w.parallel = T, 
-                                         func = function(x){mu_d(x,delta_constant)})
+  bw.d.100.sample     = cv.sim.cov(N = 1000, n = Nd[i], p = pd, h.seq, K = 5, gap = 5, R = 5, max.lag = 0, m = 1, w.parallel = T, func = function(x){mu_d(x,delta_constant)})
   bw.d.100            = mean(bw.d.100.sample)
-  bw.d.lag.100.sample = k.fold.hc.cv.cov(N = 1000, n = Nd[i], p = pd, h.seq, K = 5, gap = 5, max.lag = 4, m = 1, w.parallel = T, 
-                                         func = function(x){mu_d(x,delta_constant)})
+  bw.d.lag.100.sample = cv.sim.cov(N = 1000, n = Nd[i], p = pd, h.seq, K = 5, gap = 5, R = 5, max.lag = 3, m = 1, w.parallel = T, func = function(x){mu_d(x,delta_constant)})
   bw.d.lag.100        = apply(bw.d.lag.100.sample,1,mean)
   
   bw.list.pd.100[,i]         = c(bw.d.100,bw.d.lag.100)
   bw.sample.list.pd.100[[i]] = rbind(bw.d.100.sample,bw.d.lag.100.sample)
   
   h.seq              = lapply(1, function(l){seq(1, 3/pd, -0.05)})[[1]]
-  bw.d.100.optim      = h.optim.cov(N = 1000, n = Nd[i], p = pd, p.eval = 75, h.seq, max.lag = 0, m = 1, w.parallel = T, 
-                                    func = mu)
-  bw.d.lag.100.optim  = h.optim.cov(N = 1000, n = Nd[i], p = pd, p.eval = 75, h.seq, max.lag = 4, m = 1, w.parallel = T, 
-                                    func = mu)  
+  bw.d.100.optim      = h.optim.cov(N = 1000, n = Nd[i], p = pd, p.eval = 75, h.seq, max.lag = 0, m = 1, w.parallel = T, func = function(x){mu_d(x,delta_constant)})
+  bw.d.lag.100.optim  = h.optim.cov(N = 1000, n = Nd[i], p = pd, p.eval = 75, h.seq, max.lag = 3, m = 1, w.parallel = T, func = function(x){mu_d(x,delta_constant)})  
   
   bw.optim.list.pd.100[,i]   = c(bw.d.100.optim,bw.d.lag.100.optim)
   
