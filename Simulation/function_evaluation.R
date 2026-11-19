@@ -1,4 +1,4 @@
-est.results = function(data.sparse,data.dense,bandwidth,p.eval){
+est.results = function(data.sparse,data.dense,bandwidth,p.eval, compare_diff = F){
   
   p  = dim(data.sparse)[2]
   pd = dim(data.dense)[2] 
@@ -7,8 +7,9 @@ est.results = function(data.sparse,data.dense,bandwidth,p.eval){
   
   eval.tibble = tibble(x = eval.grid)
   
-  bw.dense  = bandwidth[1]
-  bw.delta  = bandwidth[2]
+  bw.dense   = bandwidth[1]
+  bw.delta   = bandwidth[2]
+  if(compare_diff){bw.sparse  = bandwidth[3]}
   
   L.dense = tibble(TIME = colnames(Y.d), MEAN = apply(Y.d,2,mean,na.rm = T))
   
@@ -31,7 +32,20 @@ est.results = function(data.sparse,data.dense,bandwidth,p.eval){
   
   int.delta.eval$ESTIMATE = rep(int_delta_hat, times = length(eval.tibble))
   
-  return(list(delta = L.delta.eval, dense = L.dense.eval, sparse = L.sparse.eval, delta_int = int.delta.eval)) 
+  
+  if(compare_diff){
+    L.compare.eval                 = eval.tibble
+    L.compare.eval$delta_ESTIMATE  = locPolSmootherC(x = (1:p-0.5)/p, y = L.sparse$MEAN, xeval = eval.grid, bw = bw.sparse, deg = 2, EpaK)$beta0 - L.dense.eval$ESTIMATE
+
+    int_sparse_hat                     = integrate(function(x)locPolSmootherC(x = (1:p-0.5)/p  , y = L.sparse$MEAN, xeval = x, bw = bw.sparse, deg = 2, EpaK)$beta0,lower = 0,upper =  1, stop.on.error = FALSE)$value
+    int_dense_hat                      = integrate(function(x)locPolSmootherC(x = (1:pd-0.5)/pd, y = L.dense$MEAN  ,xeval = x, bw = bw.dense , deg = 2, EpaK)$beta0,lower = 0,upper =  1, stop.on.error = FALSE)$value 
+    L.compare.eval$delta_int_ESTIMATE  = rep(int_sparse_hat - int_dense_hat, times = length(eval.tibble))
+    L.compare.eval$centered_ESTIMATE   = L.compare.eval$delta_ESTIMATE - L.compare.eval$delta_int_ESTIMATE
+  }
+  
+  if(compare_diff){return(list(delta = L.delta.eval, dense = L.dense.eval, sparse = L.sparse.eval, delta_int = int.delta.eval, compare = L.compare.eval))}
+  
+  return(list(delta = L.delta.eval, dense = L.dense.eval, sparse = L.sparse.eval, delta_int = int.delta.eval))
 }
 
 
@@ -62,14 +76,12 @@ q.MB = function(Ys, Yd, Ys.est,  Yd.est, cov, x.eval, bandwidth, alpha = 0.9, B 
     ls = modifyList(ls, list(int.s = integral))
     ld = modifyList(ld, list(int.d = integral.d))
     
-    
-    ls = modifyList(ls, list(bw.s = bandwidth[2]))    
-    ld = modifyList(ld, list(bw.d = bandwidth[1]))   
+ 
   }
   
   delta_Bootstrap = unlist(future_lapply(1:B, function(i) {MB(ls,ld,cov, dependent = depend,int = int) },future.seed = T))
   
-  q = quantile(delta_Bootstrap, probs = alpha, Type = 2)
+  q = quantile(delta_Bootstrap, probs = alpha, Type = 2, na.rm = T)
   
   return(list(quantile = q, sample = delta_Bootstrap))
 } 
@@ -95,10 +107,6 @@ MB = function(list1, list2, cov, dependent = F, int = F){
   nd = dim(sample_d)[2]
   pd = dim(sample_d)[1]
   
-  if(int == T){
-    h                      = list1[[6]]
-    h_d                    = list2[[6]]
-  }
   
   if(dependent == T){
     
@@ -131,8 +139,8 @@ MB = function(list1, list2, cov, dependent = F, int = F){
     g_n  = rnorm(n)
     g_nd = rnorm(nd)}
   
-  if(int == T){ f1_int = sapply(1:n,  function(i){mean(locPolSmootherC((1:p-0.5)/p,   sample[, i],   seq(0, 1, length.out = 1000), h_d, 2, EpaK)$beta0)})
-                f2_int = sapply(1:nd, function(i){mean(locPolSmootherC((1:pd-0.5)/pd, sample_d[, i], seq(0, 1, length.out = 1000), h_d, 2, EpaK)$beta0)})}
+  if(int == T){ f1_int = sapply(1:n,  function(i){ mean(weights %*% sample[, i])})
+                f2_int = sapply(1:nd, function(i){ mean(weights %*% drop(weights_d %*% sample_d[, i]))}) }
   
   if(int == F){return(max(abs((1/sqrt(n-1)*( weights %*% sample - T_val1 )) %*% g_n  -
                                 (n/(nd*sqrt(n-1))*( weights %*% drop(weights_d %*% sample_d) - T_val2 )) %*% g_nd)/sqrt(cov))) }
