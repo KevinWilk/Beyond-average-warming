@@ -20,7 +20,7 @@ library(gridExtra)
 
 # not centered difference function
 
-for(j in 2:11){
+for(j in 1:12){
   
   i = 1
   
@@ -36,7 +36,7 @@ for(j in 2:11){
   
 }
 
-for(j in 2:11){
+for(j in 1:12){
   
   i = 2
   
@@ -54,7 +54,7 @@ for(j in 2:11){
 
 
 
-for(j in 2:11){
+for(j in 1:12){
   
   i = 3
   
@@ -78,7 +78,7 @@ for(j in 2:11){
 
 # centered difference function
 
-for(j in 2:11){
+for(j in 1:12){
   
   i = 1
   
@@ -94,7 +94,7 @@ for(j in 2:11){
   
 }
 
-for(j in 2:11){
+for(j in 1:12){
   
   i = 2
   
@@ -112,7 +112,7 @@ for(j in 2:11){
 
 
 
-for(j in 2:11){
+for(j in 1:12){
   
   i = 3
   
