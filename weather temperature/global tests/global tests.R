@@ -31,9 +31,6 @@ for(k in 1:4){
   #########################################################################################################################################
   #(1952-1972) with (2000-2025) ###########################################################################################################
 
-  #Integral: approximation with normaldistribution
-  #test.int = readRDS(paste0("weather temperature/confidence bands/Results/quantile_integral_",data.example[[k]],".rds"))$pval
-
   #Integral: approximation with MB
   test.int    = readRDS(paste0("weather temperature/confidence bands/Results/quantile_integral_",data.example[[k]],".rds"))
   p.val       = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name)
@@ -72,6 +69,44 @@ for(k in 1:4){
   years_2000_2025_with_1952_1972 = rbind(test.int,test.delta,test.center.delta)
   
   
+  
+  
+  
+  
+  #Integral: approximation with MB (without Barlett weights)
+  test.int    = readRDS(paste0("weather temperature/confidence bands/Results/No Bartlett weights/quantile_integral_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.int    = p.adjust(p.val, method = "holm")
+  test.int    = format(test.int, scientific  = F)
+  cat(paste0("\n Global integral difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))
+  print(test.int)
+  
+  
+  
+  # not centered difference process (without Barlett weights)
+  test.delta  = readRDS(paste0("weather temperature/confidence bands/Results/No Bartlett weights/quantile_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.delta[2,]), row.names = c("H0: delta = est. integral"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.delta  = p.adjust(p.val, method = "holm")
+  test.delta  = format(test.delta, scientific  = F)
+  cat(paste0("\n Global difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))
+  print(test.delta)
+  
+  
+  
+  # centered difference process (without Barlett weights)
+  test.center.delta = readRDS(paste0("weather temperature/confidence bands/Results/No Bartlett weights/quantile_P_",data.example[[k]],".rds"))
+  p.val             = data.frame(t(test.center.delta[2,]), row.names = c("H0: centered delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000                                                                                 
+  test.center.delta = p.adjust(p.val, method = "holm")
+  test.center.delta = format(test.center.delta, scientific  = F)
+  cat(paste0("\n Global centered difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))
+  print(test.center.delta)
+  
+  
+  # Summary of all test: (1952-1972) with (2000-2025)
+  years_2000_2025_with_1952_1972_without_barlett_weights = rbind(test.int,test.delta,test.center.delta)
   
   
   
