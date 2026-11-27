@@ -273,6 +273,7 @@ for(k in 1:4){
   list.tests = list()
   
   list.tests$years_2000_2025_with_1952_1972 = years_2000_2025_with_1952_1972
+  list.tests$years_2000_2025_with_1952_1972_without_barlett_weights = years_2000_2025_with_1952_1972_without_barlett_weights
   
   list.tests$robustness_15_check_years_2000_2025_with_1952_1972  = robustness_15_check_years_2000_2025_with_1952_1972
   list.tests$robustness_075_check_years_2000_2025_with_1952_1972 = robustness_075_check_years_2000_2025_with_1952_1972
