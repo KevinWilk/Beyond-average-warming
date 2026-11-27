@@ -35,20 +35,22 @@ for(k in 1:4){
   #test.int = readRDS(paste0("weather temperature/confidence bands/Results/quantile_integral_",data.example[[k]],".rds"))$pval
 
   #Integral: approximation with MB
-  test.int = readRDS(paste0("weather temperature/confidence bands/Results/quantile_integral_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.int$pval)) |> arrange(index) |> select(factor) |> unlist()
-  test.int = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name) * holm.factor
-  test.int= format(test.int, scientific  = F)
+  test.int    = readRDS(paste0("weather temperature/confidence bands/Results/quantile_integral_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.int    = p.adjust(p.val, method = "holm")
+  test.int    = format(test.int, scientific  = F)
   cat(paste0("\n Global integral difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))
   print(test.int)
   
   
   
   # not centered difference process
-  test.delta = readRDS(paste0("weather temperature/confidence bands/Results/quantile_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.delta = data.frame(t(test.delta[2,]), row.names = c("H0: delta = est. integral"))|> setNames(month.name) * holm.factor
-  test.delta= format(test.delta, scientific  = F)
+  test.delta  = readRDS(paste0("weather temperature/confidence bands/Results/quantile_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.delta[2,]), row.names = c("H0: delta = est. integral"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.delta  = p.adjust(p.val, method = "holm")
+  test.delta  = format(test.delta, scientific  = F)
   cat(paste0("\n Global difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))
   print(test.delta)
   
@@ -56,9 +58,10 @@ for(k in 1:4){
   
   # centered difference process
   test.center.delta = readRDS(paste0("weather temperature/confidence bands/Results/quantile_P_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.center.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.center.delta = data.frame(t(test.center.delta[2,]), row.names = c("H0: centered delta = 0"))|> setNames(month.name) * holm.factor
-  test.center.delta= format(test.center.delta, scientific  = F)
+  p.val             = data.frame(t(test.center.delta[2,]), row.names = c("H0: centered delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000                                                                                 
+  test.center.delta = p.adjust(p.val, method = "holm")
+  test.center.delta = format(test.center.delta, scientific  = F)
   cat(paste0("\n Global centered difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))
   print(test.center.delta)
  
@@ -77,26 +80,29 @@ for(k in 1:4){
   # Robustness check: Multiply bandwidth of delta estimator by 1.5   ######################################################################
   #                                                                  ######################################################################
   #Integral: approximation with MB ########################################################################################################                 
-  test.int = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 1.5/quantile_integral_",data.example[[k]],".rds"))###
-  holm.factor = data.frame( factor = (12:1), index = order(test.int$pval)) |> arrange(index) |> select(factor) |> unlist()              ###
-  test.int = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name) * holm.factor                       ###
-  test.int= format(test.int, scientific  = F)                                                                                           ###
+  test.int    = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 1.5/quantile_integral_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name)                                  ###
+  p.val[p.val == 0] = 1/10000                                                                                                           ###
+  test.int    = p.adjust(p.val, method = "holm")                                                                                        ###
+  test.int    = format(test.int, scientific  = F)                                                                                       ###
   cat(paste0("\n Global integral difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))             ###
   print(test.int)                                                                                                                       ###
                                                                                                                                         ###
   # not centered difference process #######################################################################################################
-  test.delta = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 1.5/quantile_",data.example[[k]],".rds"))       ###
-  holm.factor = data.frame( factor = (12:1), index = order(test.delta[2,])) |> arrange(index) |> select(factor) |> unlist()             ### 
-  test.delta = data.frame(t(test.delta[2,]), row.names = c("H0: delta = est. integral"))|> setNames(month.name) * holm.factor           ###
-  test.delta= format(test.delta, scientific  = F)                                                                                       ###
+  test.delta  = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 1.5/quantile_",data.example[[k]],".rds"))      ###
+  p.val       = data.frame(t(test.delta[2,]), row.names = c("H0: delta = est. integral"))|> setNames(month.name)                        ###
+  p.val[p.val == 0] = 1/10000                                                                                                           ###
+  test.delta  = p.adjust(p.val, method = "holm")                                                                                        ###
+  test.delta  = format(test.delta, scientific  = F)                                                                                     ###
   cat(paste0("\n Global difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))                      ###
   print(test.delta)                                                                                                                     ###
                                                                                                                                         ###
   # centered difference process                                                                                                         ###
   test.center.delta = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 1.5/quantile_P_",data.example[[k]],".rds"))#
-  holm.factor = data.frame( factor = (12:1), index = order(test.center.delta[2,])) |> arrange(index) |> select(factor) |> unlist()      ###
-  test.center.delta = data.frame(t(test.center.delta[2,]), row.names = c("H0: centered delta = 0"))|> setNames(month.name) * holm.factor###
-  test.center.delta= format(test.center.delta, scientific  = F)                                                                         ### 
+  p.val             = data.frame(t(test.center.delta[2,]), row.names = c("H0: centered delta = 0"))|> setNames(month.name)              ###
+  p.val[p.val == 0] = 1/10000                                                                                                           ###
+  test.center.delta = p.adjust(p.val, method = "holm")                                                                                  ###
+  test.center.delta = format(test.center.delta, scientific  = F)                                                                        ### 
   cat(paste0("\n Global centered difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))             ###
   print(test.center.delta)                                                                                                              ###
   #########################################################################################################################################
@@ -110,32 +116,34 @@ for(k in 1:4){
   # Robustness check: Multiply bandwidth of delta estimator by 0.75  ###################################################################### 
   #                                                                  ######################################################################
   #Integral: approximation with MB ########################################################################################################                 
-  test.int = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 0.75/quantile_integral_",data.example[[k]],".rds"))##
-  holm.factor = data.frame( factor = (12:1), index = order(test.int$pval)) |> arrange(index) |> select(factor) |> unlist()              ###
-  test.int = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name) * holm.factor                       ###
-  test.int= format(test.int, scientific  = F)                                                                                           ###
+  test.int    = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 0.75/quantile_integral_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name)                                  ###
+  p.val[p.val == 0] = 1/10000                                                                                                           ###
+  test.int    = p.adjust(p.val, method = "holm")                                                                                        ###
+  test.int    = format(test.int, scientific  = F)                                                                                       ###
   cat(paste0("\n Global integral difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))             ###
   print(test.int)                                                                                                                       ###
                                                                                                                                         ###
   # not centered difference process #######################################################################################################
-  test.delta = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 0.75/quantile_",data.example[[k]],".rds"))      ###
-  holm.factor = data.frame( factor = (12:1), index = order(test.delta[2,])) |> arrange(index) |> select(factor) |> unlist()             ### 
-  test.delta = data.frame(t(test.delta[2,]), row.names = c("H0: delta = est. integral"))|> setNames(month.name) * holm.factor           ###
-  test.delta= format(test.delta, scientific  = F)                                                                                       ###
+  test.delta  = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 0.75/quantile_",data.example[[k]],".rds"))     ###
+  p.val       = data.frame(t(test.delta[2,]), row.names = c("H0: delta = est. integral"))|> setNames(month.name)                        ###
+  p.val[p.val == 0] = 1/10000                                                                                                           ###
+  test.delta  = p.adjust(p.val, method = "holm")                                                                                        ###
+  test.delta  = format(test.delta, scientific  = F)                                                                                     ###
   cat(paste0("\n Global difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))                      ###
   print(test.delta)                                                                                                                     ###
                                                                                                                                         ###
   # centered difference process                                                                                                         ###
   test.center.delta = readRDS(paste0("weather temperature/confidence bands/Results/multiply by 0.75/quantile_P_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.center.delta[2,])) |> arrange(index) |> select(factor) |> unlist()      ###
-  test.center.delta = data.frame(t(test.center.delta[2,]), row.names = c("H0: centered delta = 0"))|> setNames(month.name) * holm.factor###
-  test.center.delta= format(test.center.delta, scientific  = F)                                                                         ### 
+  p.val             = data.frame(t(test.center.delta[2,]), row.names = c("H0: centered delta = 0"))|> setNames(month.name)              ###             
+  p.val[p.val == 0] = 1/10000                                                                                                           ###
+  test.center.delta = p.adjust(p.val, method = "holm")                                                                                  ###
+  test.center.delta = format(test.center.delta, scientific  = F)                                                                        ### 
   cat(paste0("\n Global centered difference test of (1952-1972) and (2000-2025) with multiplier bootstrap approximation:"))             ###
   print(test.center.delta)                                                                                                              ###
   #########################################################################################################################################
   #########################################################################################################################################
-  #########################################################################################################################################
-  
+
   robustness_075_check_years_2000_2025_with_1952_1972 = rbind(test.int,test.delta,test.center.delta)
   
   
@@ -151,20 +159,21 @@ for(k in 1:4){
   
   #Integral: approximation with MB
   test.int = readRDS(paste0("weather temperature/trend analysis/trend results/sparse_quantile_integral_",data.example[[k]],".rds"))
-  
-  holm.factor = data.frame( factor = (12:1), index = order(test.int$pval)) |> arrange(index) |> select(factor) |> unlist()
-  test.int = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name) * holm.factor
-  test.int = format(test.int, scientific  = F)
+  p.val       = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.int    = p.adjust(p.val, method = "holm")
+  test.int    = format(test.int, scientific  = F)
   cat(paste0("\n Global integral difference test of (1952-1962) and (1963-1972) with multiplier bootstrap approximation:"))
   print(test.int)
   
   
   
   # not centered difference process
-  test.delta = readRDS(paste0("weather temperature/trend analysis/trend results/sparse_quantile_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.delta = data.frame(t(test.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name) * holm.factor
-  test.delta= format(test.delta, scientific  = F)
+  test.delta  = readRDS(paste0("weather temperature/trend analysis/trend results/sparse_quantile_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.delta  = p.adjust(p.val, method = "holm")
+  test.delta  = format(test.delta, scientific  = F)
   cat(paste0("\n Global difference test of (1952-1962) and (1963-1972) with multiplier bootstrap approximation:"))
   print(test.delta)
   
@@ -172,9 +181,10 @@ for(k in 1:4){
   
   # centered difference process
   test.center.delta = readRDS(paste0("weather temperature/trend analysis/trend results/sparse_P_quantile_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.center.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.center.delta = data.frame(t(test.center.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name) * holm.factor
-  test.center.delta= format(test.center.delta, scientific  = F)
+  p.val             = data.frame(t(test.center.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.center.delta = p.adjust(p.val, method = "holm")
+  test.center.delta = format(test.center.delta, scientific  = F)
   cat(paste0("\n Global difference test of (1952-1962) and (1963-1972) with multiplier bootstrap approximation:"))
   print(test.center.delta)
   
@@ -187,29 +197,31 @@ for(k in 1:4){
   #(2000-2012) with (2013-2025) ###########################################################################################################
   
   #Integral: approximation with MB
-  test.int = readRDS(paste0("weather temperature/trend analysis/trend results/dense_quantile_integral_",data.example[[k]],".rds"))
-  
-  holm.factor = data.frame( factor = (12:1), index = order(test.int$pval)) |> arrange(index) |> select(factor) |> unlist()
-  test.int = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name) * holm.factor
-  test.int = format(test.int, scientific  = F)
+  test.int    = readRDS(paste0("weather temperature/trend analysis/trend results/dense_quantile_integral_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.int    = p.adjust(p.val, method = "holm")
+  test.int    = format(test.int, scientific  = F)
   cat(paste0("\n Global integral difference test of (2000-2012) and (2013-2025) with multiplier bootstrap approximation:"))
   print(test.int)
   
   
   
   # not centered difference process
-  test.delta = readRDS(paste0("weather temperature/trend analysis/trend results/dense_quantile_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.delta = data.frame(t(test.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name) * holm.factor
-  test.delta= format(test.delta, scientific  = F)
+  test.delta  = readRDS(paste0("weather temperature/trend analysis/trend results/dense_quantile_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.delta  = p.adjust(p.val, method = "holm")
+  test.delta  = format(test.delta, scientific  = F)
   cat(paste0("\n Global difference test of (2000-2012) and (2013-2025) with multiplier bootstrap approximation:"))
   print(test.delta)
   
   
   # centered difference process
   test.center.delta = readRDS(paste0("weather temperature/trend analysis/trend results/dense_P_quantile_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.center.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.center.delta = data.frame(t(test.center.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name) * holm.factor
+  p.val             = data.frame(t(test.center.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.center.delta = p.adjust(p.val, method = "holm")
   test.center.delta = format(test.center.delta, scientific  = F)
   cat(paste0("\n Global difference test of (1952-1962) and (1963-1972) with multiplier bootstrap approximation:"))
   print(test.center.delta)
@@ -258,10 +270,10 @@ for(k in 1:2){
   
   #Integral: approximation with MB
   test.int = readRDS(paste0("weather temperature/trend analysis/change results/sparse_",station[[k]],"_quantile_integral_",data.example[[k]],".rds"))
-  
-  holm.factor = data.frame( factor = (12:1), index = order(test.int$pval)) |> arrange(index) |> select(factor) |> unlist()
-  test.int = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name) * holm.factor
-  test.int = format(test.int, scientific  = F)
+  p.val       = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.int    = p.adjust(p.val, method = "holm")
+  test.int    = format(test.int, scientific  = F)
   if(k == 1){ periods = "(1952-1970) and (1971-1972)"}else{ periods = "(1952-1961) and (1962-1972)"}
   cat(paste0("\n Global integral difference test of ",periods," with multiplier bootstrap approximation:"))
   print(test.int)
@@ -269,18 +281,20 @@ for(k in 1:2){
   
   
   # not centered difference process
-  test.delta = readRDS(paste0("weather temperature/trend analysis/change results/sparse_",station[[k]],"_quantile_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.delta = data.frame(t(test.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name) * holm.factor
-  test.delta= format(test.delta, scientific  = F)
+  test.delta  = readRDS(paste0("weather temperature/trend analysis/change results/sparse_",station[[k]],"_quantile_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.delta  = p.adjust(p.val, method = "holm")
+  test.delta  = format(test.delta, scientific  = F)
   cat(paste0("\n Global difference test of ",periods," with multiplier bootstrap approximation:"))
   print(test.delta)
   
   
   # centered difference process
   test.centered.delta = readRDS(paste0("weather temperature/trend analysis/change results/sparse_",station[[k]],"_P_quantile_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.centered.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.centered.delta = data.frame(t(test.centered.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name) * holm.factor
+  p.val = data.frame(t(test.centered.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.centered.delta = p.adjust(p.val, method = "holm")
   test.centered.delta= format(test.centered.delta, scientific  = F)
   cat(paste0("\n Global difference test of ",periods," with multiplier bootstrap approximation:"))
   print(test.centered.delta)
@@ -319,20 +333,22 @@ for(k in 1:3){
   
   
   #Integral: approximation with MB
-  test.int = readRDS(paste0("weather temperature/trend analysis/relocation results/",regime,"_",station[[k]],"_quantile_integral_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.int$pval)) |> arrange(index) |> select(factor) |> unlist()
-  test.int = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name) * holm.factor
-  test.int = format(test.int, scientific  = F)
+  test.int    = readRDS(paste0("weather temperature/trend analysis/relocation results/",regime,"_",station[[k]],"_quantile_integral_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.int$pval), row.names = c("H0: integral = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.int    = p.adjust(p.val, method = "holm")
+  test.int    = format(test.int, scientific  = F)
   cat(paste0("\n Global integral difference test of ",periods[[k]]," with multiplier bootstrap approximation:"))
   print(test.int)
   
   
   
   # not centered difference process
-  test.delta = readRDS(paste0("weather temperature/trend analysis/relocation results/",regime,"_",station[[k]],"_quantile_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.delta = data.frame(t(test.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name) * holm.factor
-  test.delta= format(test.delta, scientific  = F)
+  test.delta  = readRDS(paste0("weather temperature/trend analysis/relocation results/",regime,"_",station[[k]],"_quantile_",data.example[[k]],".rds"))
+  p.val       = data.frame(t(test.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.delta  = p.adjust(p.val, method = "holm")
+  test.delta  = format(test.delta, scientific  = F)
   cat(paste0("\n Global difference test of ",periods[[k]]," with multiplier bootstrap approximation:"))
   print(test.delta)
   
@@ -340,9 +356,10 @@ for(k in 1:3){
   
   # centered difference process
   test.centered.delta = readRDS(paste0("weather temperature/trend analysis/relocation results/",regime,"_",station[[k]],"_P_quantile_",data.example[[k]],".rds"))
-  holm.factor = data.frame( factor = (12:1), index = order(test.centered.delta[2,])) |> arrange(index) |> select(factor) |> unlist()
-  test.centered.delta = data.frame(t(test.centered.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name) * holm.factor
-  test.centered.delta= format(test.centered.delta, scientific  = F)
+  p.val               = data.frame(t(test.centered.delta[2,]), row.names = c("H0: delta = 0"))|> setNames(month.name)
+  p.val[p.val == 0] = 1/10000
+  test.centered.delta = p.adjust(p.val, method = "holm")
+  test.centered.delta = format(test.centered.delta, scientific  = F)
   cat(paste0("\n Global difference test of ",periods[[k]]," with multiplier bootstrap approximation:"))
   print(test.centered.delta)
   
@@ -354,3 +371,4 @@ for(k in 1:3){
   saveRDS(list.tests, filename)
   
 }
+
